@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/pages/landing/LandingPage.dart';
 
 void main() {
-  runApp(const OtakuTrackerApp());
+  runApp(const ProviderScope(
+    child: OtakuTrackerApp(),
+  ));
 }
 
 class OtakuTrackerApp extends StatelessWidget {
@@ -17,7 +20,9 @@ class OtakuTrackerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LandingPage(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark,
+      home: LandingPage(),
     );
   }
 }
