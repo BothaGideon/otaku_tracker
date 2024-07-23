@@ -1,11 +1,10 @@
+import 'dart:convert' as convert;
 import 'dart:developer';
-import 'dart:ffi';
 
 import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
 
 class LandingPageService {
-  var headers = {'X-MAL-CLIENT-ID': 'your client id here'};
+  var headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
   var request = http.Request(
       'GET',
       Uri.parse(
