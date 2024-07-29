@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:otaku_tracker/pages/landing/LandingPage.dart';
+import 'package:otaku_tracker/pages/landing/landing_page.dart';
 
 void main() {
   runApp(const ProviderScope(

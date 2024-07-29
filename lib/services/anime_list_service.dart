@@ -1,13 +1,12 @@
 import 'dart:convert' as convert;
 
 import 'package:http/http.dart' as http;
+import 'package:otaku_tracker/models/response/anime.dart';
 
-import '../../models/response/anime_list.dart';
-
-class LandingPageService {
+class AnimeListService {
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
-  Future<AnimeList> getAnimeList() async {
+  Future<Anime> getAnimeList() async {
     final request = http.Request(
       'GET',
       Uri.parse(
@@ -19,10 +18,11 @@ class LandingPageService {
 
     if (streamedResponse.statusCode == 200) {
       final response = await http.Response.fromStream(streamedResponse);
-      final jsonResponse =
-          convert.json.decode(response.body) as Map<String, dynamic>;
+      final jsonResponse = convert.json.decode(response.body);
 
-      return AnimeList.fromJson(jsonResponse);
+      final fromJson = Anime.fromJson(jsonResponse);
+
+      return fromJson;
     } else {
       throw Exception(
           'Failed to load anime list: ${streamedResponse.reasonPhrase}');
