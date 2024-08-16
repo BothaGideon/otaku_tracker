@@ -10,7 +10,7 @@ class SeasonalAnimeListService {
     final request = http.Request(
       'GET',
       Uri.parse(
-          'https://api.myanimelist.net/v2/anime/season/$year/$season?limit=100?sort=anime_num_list_users'),
+          'https://api.myanimelist.net/v2/anime/season/$year/$season?limit=100&sort=anime_num_list_users'),
     );
     request.headers.addAll(headers);
 

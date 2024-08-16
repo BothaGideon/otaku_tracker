@@ -6,25 +6,34 @@ import '../models/response/anime.dart';
 import '../services/anime_list_service.dart';
 
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
-  final year = DateTime.now().year;
-  final month = AnimeSeasonsHelper().getMonthName(DateTime.now().month);
-  final season = AnimeSeasonsHelper().getSeason(month);
+  final season = AnimeSeasonsHelper().getCurrentSeason();
+  final previousSeason = AnimeSeasonsHelper().getPreviousSeason();
 
   final animeListFuture = AnimeListService().getAnimeList();
   final seasonalAnimeFuture =
-      SeasonalAnimeListService().getSeasonalAnimeList(year, season);
+      SeasonalAnimeListService().getSeasonalAnimeList(season.$2, season.$1);
+  final previousSeasonAnimeFuture = SeasonalAnimeListService()
+      .getSeasonalAnimeList(previousSeason.$2, previousSeason.$1);
 
-  final results = await Future.wait([animeListFuture, seasonalAnimeFuture]);
+  final results = await Future.wait(
+      [animeListFuture, seasonalAnimeFuture, previousSeasonAnimeFuture]);
 
   final animeList = results[0].data;
   final seasonalAnimeList = results[1].data;
+  final previousSeasonAnimeList = results[2].data;
   return CombinedData(
-      animeList: animeList, seasonalAnimeList: seasonalAnimeList);
+      animeList: animeList,
+      currentSeasonAnimeList: seasonalAnimeList,
+      previousSeasonAnimeList: previousSeasonAnimeList);
 });
 
 class CombinedData {
   final List<AnimeData> animeList;
-  final List<AnimeData> seasonalAnimeList;
+  final List<AnimeData> currentSeasonAnimeList;
+  final List<AnimeData> previousSeasonAnimeList;
 
-  CombinedData({required this.animeList, required this.seasonalAnimeList});
+  CombinedData(
+      {required this.previousSeasonAnimeList,
+      required this.animeList,
+      required this.currentSeasonAnimeList});
 }
