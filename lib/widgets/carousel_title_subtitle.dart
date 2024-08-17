@@ -4,7 +4,7 @@ class CarouselTitleSubtitle extends StatelessWidget {
   const CarouselTitleSubtitle({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
   });
 
   final String title;
@@ -25,7 +25,7 @@ class CarouselTitleSubtitle extends StatelessWidget {
                     fontSize: 16.0, fontWeight: FontWeight.w500),
               ),
               Text(
-                subtitle!,
+                subtitle ?? '',
                 style: const TextStyle(
                     fontSize: 12.0, fontWeight: FontWeight.w400),
               ),

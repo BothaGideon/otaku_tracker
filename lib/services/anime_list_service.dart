@@ -6,7 +6,7 @@ import 'package:otaku_tracker/models/response/anime.dart';
 class AnimeListService {
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
-  Future<Anime> getAnimeList() async {
+  Future<AnimeDTO> getAnimeList() async {
     final request = http.Request(
       'GET',
       Uri.parse(
@@ -20,7 +20,7 @@ class AnimeListService {
       final response = await http.Response.fromStream(streamedResponse);
       final jsonResponse = convert.json.decode(response.body);
 
-      final fromJson = Anime.fromJson(jsonResponse);
+      final fromJson = AnimeDTO.fromJson(jsonResponse);
 
       return fromJson;
     } else {

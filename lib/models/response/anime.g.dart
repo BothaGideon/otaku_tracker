@@ -6,7 +6,7 @@ part of 'anime.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Anime _$AnimeFromJson(Map<String, dynamic> json) => Anime(
+AnimeDTO _$AnimeFromJson(Map<String, dynamic> json) => AnimeDTO(
       data: (json['data'] as List<dynamic>)
           .map((e) => AnimeData.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -15,7 +15,7 @@ Anime _$AnimeFromJson(Map<String, dynamic> json) => Anime(
           : Paging.fromJson(json['paging'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$AnimeToJson(Anime instance) => <String, dynamic>{
+Map<String, dynamic> _$AnimeToJson(AnimeDTO instance) => <String, dynamic>{
       'data': instance.data,
       'paging': instance.paging,
     };

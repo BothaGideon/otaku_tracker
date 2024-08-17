@@ -1,11 +1,18 @@
-class AnimeSeasonsHelper {
-  final List<String> seasonOrder = ['winter', 'spring', 'summer', 'fall'];
+import 'package:jikan_api/jikan_api.dart';
 
-  final Map<String, List<String>> seasons = {
-    'winter': ['January', 'February', 'March'],
-    'spring': ['April', 'May', 'June'],
-    'summer': ['July', 'August', 'September'],
-    'fall': ['October', 'November', 'December'],
+class AnimeSeasonsHelper {
+  final List<SeasonType> seasonOrder = [
+    SeasonType.winter,
+    SeasonType.spring,
+    SeasonType.summer,
+    SeasonType.fall
+  ];
+
+  final Map<SeasonType, List<String>> seasons = {
+    SeasonType.winter: ['January', 'February', 'March'],
+    SeasonType.spring: ['April', 'May', 'June'],
+    SeasonType.summer: ['July', 'August', 'September'],
+    SeasonType.fall: ['October', 'November', 'December'],
   };
 
   final List<String> monthNames = [
@@ -29,7 +36,7 @@ class AnimeSeasonsHelper {
   }
 
   // Helper function to determine the season based on the month name
-  (String, int) getCurrentSeason() {
+  (SeasonType, int) getCurrentSeason() {
     final month = getMonthName(DateTime.now().month);
 
     for (var entry in seasons.entries) {
@@ -37,14 +44,14 @@ class AnimeSeasonsHelper {
         return (entry.key, DateTime.now().year);
       }
     }
-    return ('Unknown', DateTime.now().year);
+    return (SeasonType.summer, DateTime.now().year);
   }
 
-  (String, int) getPreviousSeason() {
+  (SeasonType, int) getPreviousSeason() {
     int currentIndex = seasonOrder.indexOf(getCurrentSeason().$1);
     int previousIndex = (currentIndex - 1) % seasonOrder.length;
     final String month = getMonthName(DateTime.now().month);
-    final String currentSeason = getCurrentSeason().$1;
+    final SeasonType currentSeason = getCurrentSeason().$1;
     int year = DateTime.now().year;
 
     if (previousIndex < 0) {
@@ -52,7 +59,7 @@ class AnimeSeasonsHelper {
     }
 
     // Handles the year transition
-    if (month == 'January' && currentSeason == 'winter') {
+    if (month == 'January' && currentSeason == SeasonType.winter) {
       year -= 1;
     }
 

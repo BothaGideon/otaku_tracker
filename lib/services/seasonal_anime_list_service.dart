@@ -1,12 +1,13 @@
 import 'dart:convert' as convert;
 
 import 'package:http/http.dart' as http;
+import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 
 class SeasonalAnimeListService {
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
-  Future<Anime> getSeasonalAnimeList(int year, String season) async {
+  Future<AnimeDTO> getSeasonalAnimeList(int year, SeasonType season) async {
     final request = http.Request(
       'GET',
       Uri.parse(
@@ -20,7 +21,7 @@ class SeasonalAnimeListService {
       final response = await http.Response.fromStream(streamedResponse);
       final jsonResponse = convert.json.decode(response.body);
 
-      final fromJson = Anime.fromJson(jsonResponse);
+      final fromJson = AnimeDTO.fromJson(jsonResponse);
 
       return fromJson;
     } else {

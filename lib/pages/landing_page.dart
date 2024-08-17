@@ -5,6 +5,7 @@ import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/carousel_list_order_provider.dart';
 import 'package:otaku_tracker/widgets/horizontal_carousel.dart';
+import 'package:otaku_tracker/widgets/loading_error_state.dart';
 
 import '../providers/anime_list_provider.dart';
 
@@ -15,9 +16,9 @@ class LandingPage extends ConsumerWidget {
     final combinedListAsyncValue = ref.watch(combinedAnimeListProvider);
     final carouselListOrderValues = ref.watch(carouselListOrderProvider);
     final currentSeason =
-        '${StringUtils.capitalize(AnimeSeasonsHelper().getCurrentSeason().$1)} ${AnimeSeasonsHelper().getCurrentSeason().$2}';
+        '${StringUtils.capitalize(AnimeSeasonsHelper().getCurrentSeason().$1.name)} ${AnimeSeasonsHelper().getCurrentSeason().$2}';
     final previousSeason =
-        '${StringUtils.capitalize(AnimeSeasonsHelper().getPreviousSeason().$1)} ${AnimeSeasonsHelper().getPreviousSeason().$2}';
+        '${StringUtils.capitalize(AnimeSeasonsHelper().getPreviousSeason().$1.name)} ${AnimeSeasonsHelper().getPreviousSeason().$2}';
 
     return Scaffold(
       appBar: AppBar(
@@ -38,6 +39,30 @@ class LandingPage extends ConsumerWidget {
                   animeList: combinedList.previousSeasonAnimeList,
                   title: 'Previous season',
                   subtitle: previousSeason,
+                ),
+                HorizontalCarousel(
+                  key: const ValueKey(3),
+                  animeList:
+                      combinedList.previousSeasonAnimeList.where((anime) {
+                    return anime.airing == true;
+                  }).toList(),
+                  title: 'Leftovers',
+                  subtitle: previousSeason,
+                ),
+                HorizontalCarousel(
+                  key: const ValueKey(4),
+                  animeList: combinedList.topUpcoming,
+                  title: 'Top upcoming',
+                ),
+                HorizontalCarousel(
+                  key: const ValueKey(5),
+                  animeList: combinedList.topAiring,
+                  title: 'Top airing',
+                ),
+                HorizontalCarousel(
+                  key: const ValueKey(6),
+                  animeList: combinedList.mostPopular,
+                  title: 'Most popular',
                 )
               ],
               onReorder: (int oldIndex, int newIndex) {
@@ -49,7 +74,13 @@ class LandingPage extends ConsumerWidget {
               });
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        error: (error, stack) => LoadingErrorState(
+          onRetry: () {
+            print('Retry pressed');
+            print(error);
+            print(stack);
+          },
+        ),
       ),
     );
   }

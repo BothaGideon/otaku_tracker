@@ -1,11 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:otaku_tracker/models/response/anime.dart';
+import 'package:jikan_api/jikan_api.dart';
 
 import 'carousel_title_subtitle.dart';
 
 class HorizontalCarousel extends StatelessWidget {
-  final List<AnimeData> animeList;
+  final List<Anime> animeList;
   final Key key;
   final String title;
   final String? subtitle;
@@ -21,6 +21,9 @@ class HorizontalCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        const SizedBox(
+          height: 16.0,
+        ),
         CarouselTitleSubtitle(
           title: title,
           subtitle: subtitle,
@@ -37,8 +40,8 @@ class HorizontalCarousel extends StatelessWidget {
             viewportFraction: 0.33,
           ),
           items: animeList.map((animeData) {
-            final anime = animeData.node;
-            final mainPicture = anime.mainPicture;
+            final anime = animeData;
+            final mainPicture = anime.imageUrl;
             return Builder(
               builder: (BuildContext context) {
                 return Container(
@@ -54,7 +57,7 @@ class HorizontalCarousel extends StatelessWidget {
                               borderRadius: BorderRadius.circular(15),
                               child: FadeInImage.assetNetwork(
                                 placeholder: 'assets/icons/logo_black.png',
-                                image: mainPicture.medium,
+                                image: mainPicture,
                                 fit: BoxFit.cover,
                                 height: 204.0,
                               ),
@@ -66,7 +69,7 @@ class HorizontalCarousel extends StatelessWidget {
                             ),
                       const SizedBox(height: 10.0),
                       Text(
-                        anime.title,
+                        anime.titleEnglish ?? anime.title,
                         style: const TextStyle(
                             fontSize: 14.0, fontWeight: FontWeight.w400),
                         overflow: TextOverflow.ellipsis,

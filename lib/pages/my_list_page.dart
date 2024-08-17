@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:otaku_tracker/widgets/loading_error_state.dart';
 
 import '../providers/navigation_index_provider.dart';
 
@@ -10,13 +11,10 @@ class MyListPage extends ConsumerWidget {
 
     return Scaffold(
         appBar: AppBar(title: Text('My List Page')),
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/seasonal');
-            },
-            child: Text('Go to Seasonal Page'),
-          ),
+        body: LoadingErrorState(
+          onRetry: () {
+            print('Yay!');
+          },
         ));
   }
 }

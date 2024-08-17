@@ -3,13 +3,13 @@ import 'package:json_annotation/json_annotation.dart';
 part 'anime.g.dart';
 
 @JsonSerializable()
-class Anime {
+class AnimeDTO {
   final List<AnimeData> data;
   final Paging? paging;
 
-  Anime({required this.data, this.paging});
+  AnimeDTO({required this.data, this.paging});
 
-  factory Anime.fromJson(Map<String, dynamic> json) => _$AnimeFromJson(json);
+  factory AnimeDTO.fromJson(Map<String, dynamic> json) => _$AnimeFromJson(json);
 
   Map<String, dynamic> toJson() => _$AnimeToJson(this);
 
