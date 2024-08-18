@@ -16,9 +16,9 @@ class LandingPage extends ConsumerWidget {
     final combinedListAsyncValue = ref.watch(combinedAnimeListProvider);
     final carouselListOrderValues = ref.watch(carouselListOrderProvider);
     final currentSeason =
-        '${StringUtils.capitalize(AnimeSeasonsHelper().getCurrentSeason().$1.name)} ${AnimeSeasonsHelper().getCurrentSeason().$2}';
+        '${StringUtils.capitalize(AnimeSeasonsHelper().getCurrentSeason().seasonType.name)} ${AnimeSeasonsHelper().getCurrentSeason().year}';
     final previousSeason =
-        '${StringUtils.capitalize(AnimeSeasonsHelper().getPreviousSeason().$1.name)} ${AnimeSeasonsHelper().getPreviousSeason().$2}';
+        '${StringUtils.capitalize(AnimeSeasonsHelper().getPreviousSeason().seasonType.name)} ${AnimeSeasonsHelper().getPreviousSeason().year}';
 
     return Scaffold(
       appBar: AppBar(

@@ -20,7 +20,7 @@ final routes = {
 class OtakuTrackerApp extends StatelessWidget {
   const OtakuTrackerApp({super.key});
 
-  // This widget is the root of your application.
+  // TODO: Implement Global Search bar using showSearch: https://stackoverflow.com/questions/74380428/searchbar-that-expands-to-the-whole-screen-in-flutter
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

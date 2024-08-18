@@ -1,5 +1,14 @@
 import 'package:jikan_api/jikan_api.dart';
 
+enum SeasonSelectionFilter { upcoming, current, past }
+
+class SeasonYearType {
+  SeasonType seasonType;
+  int year;
+
+  SeasonYearType({required this.seasonType, required this.year});
+}
+
 class AnimeSeasonsHelper {
   final List<SeasonType> seasonOrder = [
     SeasonType.winter,
@@ -36,22 +45,23 @@ class AnimeSeasonsHelper {
   }
 
   // Helper function to determine the season based on the month name
-  (SeasonType, int) getCurrentSeason() {
+  SeasonYearType getCurrentSeason() {
     final month = getMonthName(DateTime.now().month);
 
     for (var entry in seasons.entries) {
       if (entry.value.contains(month)) {
-        return (entry.key, DateTime.now().year);
+        return SeasonYearType(seasonType: entry.key, year: DateTime.now().year);
       }
     }
-    return (SeasonType.summer, DateTime.now().year);
+    return SeasonYearType(
+        seasonType: SeasonType.summer, year: DateTime.now().year);
   }
 
-  (SeasonType, int) getPreviousSeason() {
-    int currentIndex = seasonOrder.indexOf(getCurrentSeason().$1);
+  SeasonYearType getPreviousSeason() {
+    int currentIndex = seasonOrder.indexOf(getCurrentSeason().seasonType);
     int previousIndex = (currentIndex - 1) % seasonOrder.length;
     final String month = getMonthName(DateTime.now().month);
-    final SeasonType currentSeason = getCurrentSeason().$1;
+    final SeasonType currentSeason = getCurrentSeason().seasonType;
     int year = DateTime.now().year;
 
     if (previousIndex < 0) {
@@ -63,6 +73,23 @@ class AnimeSeasonsHelper {
       year -= 1;
     }
 
-    return (seasonOrder[previousIndex], year);
+    return SeasonYearType(seasonType: seasonOrder[previousIndex], year: year);
+  }
+
+  SeasonYearType getUpcomingSeason() {
+    SeasonType upcomingSeasonType;
+    final SeasonType currentSeason = getCurrentSeason().seasonType;
+    final String currentMonth = getMonthName(DateTime.now().month);
+    final int currentYear = DateTime.now().year;
+    int currentSeasonIndex = seasonOrder.indexOf(currentSeason);
+
+    // Handles the year transition
+    if (currentMonth == 'December' && currentSeason == SeasonType.fall) {
+      return SeasonYearType(
+          seasonType: SeasonType.winter, year: currentYear + 1);
+    } else {
+      upcomingSeasonType = seasonOrder[currentSeasonIndex + 1];
+      return SeasonYearType(seasonType: upcomingSeasonType, year: currentYear);
+    }
   }
 }

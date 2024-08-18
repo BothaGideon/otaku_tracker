@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:riverpod/riverpod.dart';
@@ -8,13 +6,17 @@ final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   final jikan = Jikan();
   final season = AnimeSeasonsHelper().getCurrentSeason();
   final previousSeason = AnimeSeasonsHelper().getPreviousSeason();
+  final upcomingSeasonDate = AnimeSeasonsHelper().getUpcomingSeason();
 
   // current season
   final currentSeason =
-      await jikan.getSeason(year: season.$2, season: season.$1);
+      await jikan.getSeason(year: season.year, season: season.seasonType);
   // previous season
-  final previousSeasonJ =
-      await jikan.getSeason(year: previousSeason.$2, season: previousSeason.$1);
+  final previousSeasonJ = await jikan.getSeason(
+      year: previousSeason.year, season: previousSeason.seasonType);
+  //upcoming season
+  final upcomingSeason = await jikan.getSeason(
+      year: upcomingSeasonDate.year, season: upcomingSeasonDate.seasonType);
   // TODO: suggested for you
   //top upcoming
   final topUpcoming = await jikan.getTopAnime(filter: TopFilter.upcoming);
@@ -23,19 +25,9 @@ final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   //most popular
   final mostPopular = await jikan.getTopAnime(filter: TopFilter.bypopularity);
 
-  // final results = await Future.wait([
-  //   seasonalAnimeFuture,
-  //   previousSeasonAnimeFuture,
-  // ]);
-
-  log(topUpcoming.toString());
-  log(topAiring.toString());
-  log(mostPopular.toString());
-
-  // final seasonalAnimeList = results[0].data;
-  // final previousSeasonAnimeList = results[1].data;
   final currentSeasonList = currentSeason.toList();
   final previousSeasonList = previousSeasonJ.toList();
+  final upcomingSeasonList = upcomingSeason.toList();
   final mostPopularList = mostPopular.toList();
   final topUpcomingList = topUpcoming.toList();
   final topAiringList = topAiring.toList();
@@ -43,6 +35,7 @@ final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   return CombinedData(
       currentSeasonAnimeList: currentSeasonList,
       previousSeasonAnimeList: previousSeasonList,
+      upcomingSeasonAnimeList: upcomingSeasonList,
       topUpcoming: topUpcomingList,
       topAiring: topAiringList,
       mostPopular: mostPopularList);
@@ -51,12 +44,14 @@ final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
 class CombinedData {
   final List<Anime> currentSeasonAnimeList;
   final List<Anime> previousSeasonAnimeList;
+  final List<Anime> upcomingSeasonAnimeList;
   final List<Anime> topUpcoming;
   final List<Anime> topAiring;
   final List<Anime> mostPopular;
 
   CombinedData(
       {required this.previousSeasonAnimeList,
+      required this.upcomingSeasonAnimeList,
       required this.topUpcoming,
       required this.topAiring,
       required this.mostPopular,
