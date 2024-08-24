@@ -2,12 +2,8 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 const clientId = String.fromEnvironment('MALAPI');
 const tokenUri = 'https://myanimelist.net/v1/oauth2/token';
@@ -23,25 +19,27 @@ class OauthService {
       dev.log(loginUrl);
       final uri = await FlutterWebAuth2.authenticate(
           url: loginUrl, callbackUrlScheme: 'otakutracker');
+      dev.log(uri);
       final queryParams = Uri.parse(uri).queryParameters;
-      print(queryParams);
       if (queryParams['code'] == null) return null;
-
-      Fluttertoast.showToast(
-          msg: 'Login successful', backgroundColor: Colors.grey);
+      //
+      // Fluttertoast.showToast(
+      //     msg: 'Login successful', backgroundColor: Colors.grey);
 
       final tokenJson = await _generateTokens(verifier, queryParams['code']!);
       final username = await _getUserName(tokenJson['access_token']);
 
       print(username);
       tokenJson['datetime'] = DateTime.now();
+      dev.log(tokenJson.toString());
       // TODO: Implement way to store username and tokenJson
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', username);
+      // SharedPreferences prefs = await SharedPreferences.getInstance();
+      // await prefs.setString('username', username);
 
       return username;
-    } on PlatformException {
-      return "An error occured somewhere in the oauth thingy";
+    } catch (e) {
+      dev.log("PlatformException: $e");
+      return "An error occurred somewhere in the oauth thingy";
     }
   }
 
