@@ -18,7 +18,7 @@ class OauthService {
     try {
       dev.log(loginUrl);
       final uri = await FlutterWebAuth2.authenticate(
-          url: loginUrl, callbackUrlScheme: 'otakutracker');
+          url: loginUrl, callbackUrlScheme: 'otaku.tracker');
       dev.log(uri);
       final queryParams = Uri.parse(uri).queryParameters;
       if (queryParams['code'] == null) return null;

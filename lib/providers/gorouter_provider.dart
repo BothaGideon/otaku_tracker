@@ -12,7 +12,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const NavigationContainer(),
       ),
       GoRoute(
-        path: '/auth',
+        path: '/callback',
         builder: (context, state) => MyListPage(),
       ),
     ],
