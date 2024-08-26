@@ -47,38 +47,51 @@ class SeasonalPage extends ConsumerWidget {
                 List<Anime> selectedAnimeList;
                 switch (selection.first) {
                   case SeasonSelectionFilter.past:
-                    selectedAnimeList =
-                        seasonalAnimeList.previousSeasonAnimeList;
+                    selectedAnimeList = seasonalAnimeList.previousSeasonAnimeList;
                     break;
                   case SeasonSelectionFilter.upcoming:
-                    selectedAnimeList =
-                        seasonalAnimeList.upcomingSeasonAnimeList;
+                    selectedAnimeList = seasonalAnimeList.upcomingSeasonAnimeList;
                     break;
                   default:
-                    selectedAnimeList =
-                        seasonalAnimeList.currentSeasonAnimeList;
-                    // Add logic to fetch current season anime
+                    selectedAnimeList = seasonalAnimeList.currentSeasonAnimeList;
                     break;
                 }
 
-                return GridView.builder(
-                  itemBuilder: (BuildContext context, int index) {
-                    final anime = selectedAnimeList[index];
-                    return GestureDetector(
-                      onTap: () {
-                        print('Tapped on ${anime}');
-                      },
-                      child: PosterImageTitle(
-                        anime: selectedAnimeList[index],
-                      ),
-                    );
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && seasonalAnimeList.hasMoreData) {
+                      ref.read(combinedAnimeListProvider.notifier).loadMoreData(selection.first);
+                    }
+                    return true;
                   },
-                  itemCount: selectedAnimeList.length,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200.0,
-                    mainAxisSpacing: 10.0,
-                    crossAxisSpacing: 10.0,
-                    childAspectRatio: 0.6,
+                  child: GridView.builder(
+                    itemBuilder: (BuildContext context, int index) {
+                      if (index >= selectedAnimeList.length) {
+                        // Skeleton loading for additional data
+                        return Container(
+                          width: 200,
+                          height: 300,
+                          color: Colors.grey[300],
+                        );
+                      }
+
+                      final anime = selectedAnimeList[index];
+                      return GestureDetector(
+                        onTap: () {
+                          print('Tapped on ${anime}');
+                        },
+                        child: PosterImageTitle(
+                          anime: selectedAnimeList[index],
+                        ),
+                      );
+                    },
+                    itemCount: selectedAnimeList.length + (seasonalAnimeList.hasMoreData ? 1 : 0), // Extra item for loading indicator
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200.0,
+                      mainAxisSpacing: 10.0,
+                      crossAxisSpacing: 10.0,
+                      childAspectRatio: 0.6,
+                    ),
                   ),
                 );
               },
