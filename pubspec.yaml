@@ -41,13 +41,13 @@ dependencies:
   flutter_animate: ^4.5.0
   carousel_slider: ^5.0.0
   jikan_api: ^2.2.1
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.0+1
   flutter_svg: ^2.0.10+1
   flutter_riverpod: ^2.5.1
   riverpod_annotation: ^2.3.5
   basic_utils: ^5.7.0
   material_symbols_icons: ^4.2780.0
-  flutter_web_auth_2: ^3.1.2
+  flutter_web_auth_2: ^4.1.0
   fluttertoast: ^8.2.8
   shared_preferences: ^2.3.2
   go_router: ^14.2.3
@@ -59,9 +59,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   #  flutter_launcher_icons: ^0.13.1 -- Uncomment this to regenerate icons
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   riverpod_generator: ^2.4.0
-  custom_lint: ^0.6.4
+  custom_lint: ^0.7.5
   riverpod_lint: ^2.3.10
 
 flutter_launcher_icons:
