@@ -1,35 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:go_router/go_router.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 
 import '../providers/navigation_index_provider.dart';
 
-class MyListPage extends ConsumerWidget {
+class MyListPage extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _MyListPageState createState() => _MyListPageState();
+}
+
+class _MyListPageState extends ConsumerState<MyListPage> {
+  String? username;
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(navigationIndexProvider);
     final oauthService = ref.read(oauthProvider);
-    String? username;
 
     return Scaffold(
         appBar: AppBar(title: Text('My List Page')),
-        body: ElevatedButton(
-          onPressed: () async {
-            username = await oauthService.login();
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (username != null)
+                Text('Logged in as: $username')
+              else
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    setState(() {
+                      isLoading = true;
+                    });
 
-            if (username != null) {
-              // Navigate to the home page or another appropriate screen
-              context.go('/callback');
-            } else {
-              Fluttertoast.showToast(
-                msg: "Login failed",
-                backgroundColor: Colors.red,
-              );
-            }
-          },
-          child: Text(username ?? 'Login with MyAnimeList'),
+                    try {
+                      final result = await oauthService.login();
+
+                      if (result != null && !result.startsWith('An error occurred')) {
+                        setState(() {
+                          username = result;
+                          isLoading = false;
+                        });
+
+                        Fluttertoast.showToast(
+                          msg: "Login successful",
+                          backgroundColor: Colors.green,
+                        );
+                      } else {
+                        setState(() {
+                          isLoading = false;
+                        });
+
+                        Fluttertoast.showToast(
+                          msg: result ?? "Login failed",
+                          backgroundColor: Colors.red,
+                        );
+                      }
+                    } catch (e) {
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      Fluttertoast.showToast(
+                        msg: "Login failed: $e",
+                        backgroundColor: Colors.red,
+                      );
+                    }
+                  },
+                  child: isLoading
+                      ? CircularProgressIndicator()
+                      : Text('Login with MyAnimeList'),
+                ),
+            ],
+          ),
         ));
   }
 }

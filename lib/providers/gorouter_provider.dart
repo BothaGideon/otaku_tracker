@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:otaku_tracker/main.dart';
-import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -10,10 +9,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         builder: (context, state) => const NavigationContainer(),
-      ),
-      GoRoute(
-        path: '/callback',
-        builder: (context, state) => MyListPage(),
       ),
     ],
     initialLocation: '/',

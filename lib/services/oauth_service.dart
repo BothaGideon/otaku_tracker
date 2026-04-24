@@ -16,30 +16,36 @@ class OauthService {
     final loginUrl = _generateLoginUrl(verifier);
 
     try {
-      dev.log(loginUrl);
+      dev.log('Starting OAuth flow with URL: $loginUrl');
       final uri = await FlutterWebAuth2.authenticate(
           url: loginUrl, callbackUrlScheme: 'otaku.tracker');
-      dev.log(uri);
-      final queryParams = Uri.parse(uri).queryParameters;
-      if (queryParams['code'] == null) return null;
-      //
-      // Fluttertoast.showToast(
-      //     msg: 'Login successful', backgroundColor: Colors.grey);
+      dev.log('OAuth callback received: $uri');
 
-      final tokenJson = await _generateTokens(verifier, queryParams['code']!);
+      final queryParams = Uri.parse(uri).queryParameters;
+      final code = queryParams['code'];
+
+      if (code == null) {
+        dev.log('No authorization code in callback URI');
+        return null;
+      }
+
+      dev.log('Authorization code received: $code');
+
+      final tokenJson = await _generateTokens(verifier, code);
       final username = await _getUserName(tokenJson['access_token']);
 
-      print(username);
+      dev.log('Login successful for user: $username');
       tokenJson['datetime'] = DateTime.now();
-      dev.log(tokenJson.toString());
+      dev.log('Token data: $tokenJson');
+
       // TODO: Implement way to store username and tokenJson
       // SharedPreferences prefs = await SharedPreferences.getInstance();
       // await prefs.setString('username', username);
 
       return username;
     } catch (e) {
-      dev.log("PlatformException: $e");
-      return "An error occurred somewhere in the oauth thingy";
+      dev.log("OAuth error: $e");
+      return "An error occurred during OAuth: $e";
     }
   }
 

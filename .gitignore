@@ -17,6 +17,7 @@
 
 # Visual Studio Code related
 .vscode/
+*.code-workspace
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -48,6 +49,53 @@
 **/ios/**/.sconsign.dblite
 **/ios/**/.tags*
 **/ios/**/.vagrant/
+**/ios/**/*.xcscmblueprint
+**/ios/**/*.xccheckout
+
+# Web related
+**/web/.dart_tool/
+**/web/build/
+**/web/packages/
+
+# Linux related
+**/linux/.dart_tool/
+**/linux/build/
+**/linux/packages/
+
+# Windows related
+**/windows/.dart_tool/
+**/windows/build/
+**/windows/packages/
+
+# macOS related
+**/macos/.dart_tool/
+**/macos/build/
+**/macos/packages/
+
+# Coverage
+coverage/
+*.lcov
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Firebase
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+**/web/firebase-config.js
+**/macos/Runner/GoogleService-Info.plist
+**/linux/firebase-config.js
+**/windows/firebase-config.js
+
+# Test results
+test-results/
+integration_test_results/
+
+# Temporary files
+*.tmp
+*.temp
 **/ios/**/DerivedData/
 **/ios/**/Icon?
 **/ios/**/Pods/
