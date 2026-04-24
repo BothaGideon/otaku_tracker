@@ -6,7 +6,7 @@ part of 'anime.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-AnimeDTO _$AnimeFromJson(Map<String, dynamic> json) => AnimeDTO(
+AnimeDTO _$AnimeDTOFromJson(Map<String, dynamic> json) => AnimeDTO(
       data: (json['data'] as List<dynamic>)
           .map((e) => AnimeData.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -15,7 +15,7 @@ AnimeDTO _$AnimeFromJson(Map<String, dynamic> json) => AnimeDTO(
           : Paging.fromJson(json['paging'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$AnimeToJson(AnimeDTO instance) => <String, dynamic>{
+Map<String, dynamic> _$AnimeDTOToJson(AnimeDTO instance) => <String, dynamic>{
       'data': instance.data,
       'paging': instance.paging,
     };
@@ -59,4 +59,50 @@ Paging _$PagingFromJson(Map<String, dynamic> json) => Paging(
 
 Map<String, dynamic> _$PagingToJson(Paging instance) => <String, dynamic>{
       'next': instance.next,
+    };
+
+UserAnimeListDTO _$UserAnimeListDTOFromJson(Map<String, dynamic> json) =>
+    UserAnimeListDTO(
+      data: (json['data'] as List<dynamic>)
+          .map((e) => UserAnimeData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      paging: json['paging'] == null
+          ? null
+          : Paging.fromJson(json['paging'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$UserAnimeListDTOToJson(UserAnimeListDTO instance) =>
+    <String, dynamic>{
+      'data': instance.data,
+      'paging': instance.paging,
+    };
+
+UserAnimeData _$UserAnimeDataFromJson(Map<String, dynamic> json) =>
+    UserAnimeData(
+      node: Node.fromJson(json['node'] as Map<String, dynamic>),
+      listStatus:
+          ListStatus.fromJson(json['list_status'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$UserAnimeDataToJson(UserAnimeData instance) =>
+    <String, dynamic>{
+      'node': instance.node,
+      'list_status': instance.listStatus,
+    };
+
+ListStatus _$ListStatusFromJson(Map<String, dynamic> json) => ListStatus(
+      status: json['status'] as String,
+      score: (json['score'] as num).toInt(),
+      numEpisodesWatched: (json['num_episodes_watched'] as num).toInt(),
+      isRewatching: json['is_rewatching'] as bool,
+      updatedAt: json['updated_at'] as String,
+    );
+
+Map<String, dynamic> _$ListStatusToJson(ListStatus instance) =>
+    <String, dynamic>{
+      'status': instance.status,
+      'score': instance.score,
+      'num_episodes_watched': instance.numEpisodesWatched,
+      'is_rewatching': instance.isRewatching,
+      'updated_at': instance.updatedAt,
     };

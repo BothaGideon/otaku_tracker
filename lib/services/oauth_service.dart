@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 const clientId = String.fromEnvironment('MALAPI');
 const tokenUri = 'https://myanimelist.net/v1/oauth2/token';
@@ -38,9 +39,9 @@ class OauthService {
       tokenJson['datetime'] = DateTime.now();
       dev.log('Token data: $tokenJson');
 
-      // TODO: Implement way to store username and tokenJson
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // await prefs.setString('username', username);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', tokenJson['access_token']);
+      await prefs.setString('username', username);
 
       return username;
     } catch (e) {
@@ -76,5 +77,15 @@ class OauthService {
     final response = await http
         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $accessToken'});
     return jsonDecode(response.body)['name'];
+  }
+
+  Future<String?> getAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token');
+  }
+
+  Future<String?> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
   }
 }

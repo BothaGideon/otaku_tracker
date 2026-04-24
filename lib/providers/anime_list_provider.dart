@@ -1,5 +1,8 @@
 import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
+import 'package:otaku_tracker/models/response/anime.dart';
+import 'package:otaku_tracker/providers/oauth_provider.dart';
+import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:riverpod/riverpod.dart';
 
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
@@ -57,3 +60,18 @@ class CombinedData {
       required this.mostPopular,
       required this.currentSeasonAnimeList});
 }
+
+final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
+  final oauthService = ref.read(oauthProvider);
+  final username = await oauthService.getUsername();
+  final accessToken = await oauthService.getAccessToken();
+  return {'username': username, 'accessToken': accessToken};
+});
+
+final userAnimeListProvider = FutureProvider<UserAnimeListDTO>((ref) async {
+  final oauthService = ref.read(oauthProvider);
+  final accessToken = await oauthService.getAccessToken();
+  if (accessToken == null) throw Exception('Not logged in');
+  final service = AnimeListService();
+  return service.getUserAnimeList(accessToken);
+});
