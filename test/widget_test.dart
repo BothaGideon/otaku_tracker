@@ -386,12 +386,12 @@ void main() {
 
     expect(find.text('Anime Details'), findsOneWidget);
     expect(find.text('Frieren'), findsAtLeastNWidgets(1));
-    expect(find.text('Synopsis'), findsOneWidget);
+    expect(find.text('SYNOPSIS'), findsOneWidget);
     expect(find.textContaining('A detailed synopsis for Frieren.'),
         findsOneWidget);
-    expect(find.text('Related media'), findsOneWidget);
+    expect(find.text('RELATED MEDIA'), findsOneWidget);
     expect(find.text('Frieren Season 2'), findsOneWidget);
-    expect(find.text('Recommended next'), findsOneWidget);
+    expect(find.text('RECOMMENDED NEXT'), findsOneWidget);
     expect(find.text('Delicious in Dungeon'), findsOneWidget);
   });
 
@@ -423,7 +423,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Anime Details'), findsOneWidget);
-    expect(find.text('Synopsis'), findsOneWidget);
+    expect(find.text('SYNOPSIS'), findsOneWidget);
     expect(find.textContaining('A detailed synopsis for Frieren.'),
         findsOneWidget);
   });

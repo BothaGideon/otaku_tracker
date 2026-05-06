@@ -43,6 +43,7 @@ class _AnimeDetailsView extends StatelessWidget {
     final recommendations = details.recommendations.take(10).toList();
     final relations = anime.relations?.take(12).toList() ?? const [];
     final title = anime.titleEnglish ?? anime.title;
+    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -51,34 +52,62 @@ class _AnimeDetailsView extends StatelessWidget {
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 720;
+              final maxHeroWidth = constraints.maxWidth > 1040
+                  ? 1040.0
+                  : constraints.maxWidth;
 
-              if (isWide) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 240,
-                      child: PosterImageTitle(anime: anime),
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxHeroWidth),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: _AnimeHeroDetails(anime: anime, title: title),
-                    ),
-                  ],
-                );
-              }
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 20.0,
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isWide = constraints.maxWidth >= 720;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 220,
-                    child: PosterImageTitle(anime: anime),
+                          if (isWide) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 220,
+                                  child: PosterImageTitle(anime: anime),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  child: _AnimeHeroDetails(
+                                    anime: anime,
+                                    title: title,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 220,
+                                child: PosterImageTitle(anime: anime),
+                              ),
+                              const SizedBox(height: 20),
+                              _AnimeHeroDetails(anime: anime, title: title),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  _AnimeHeroDetails(anime: anime, title: title),
-                ],
+                ),
               );
             },
           ),
@@ -89,7 +118,7 @@ class _AnimeDetailsView extends StatelessWidget {
               anime.synopsis?.trim().isNotEmpty == true
                   ? anime.synopsis!.trim()
                   : 'No synopsis available for this title yet.',
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: theme.textTheme.bodyLarge,
             ),
           ),
           const SizedBox(height: 16),
@@ -98,7 +127,7 @@ class _AnimeDetailsView extends StatelessWidget {
               title: 'Background',
               child: Text(
                 anime.background!.trim(),
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: theme.textTheme.bodyMedium,
               ),
             ),
             const SizedBox(height: 16),
@@ -224,6 +253,8 @@ class _AnimeHeroDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = Colors.white;
+    final subtitleColor = Colors.white70;
     final metadata = <Widget>[
       _InfoBadge(
         icon: Symbols.star_rounded,
@@ -260,45 +291,213 @@ class _AnimeHeroDetails extends StatelessWidget {
     ];
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
+          'OTAKU TRACKER',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Colors.amber,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.4,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Text(
           title,
-          style: Theme.of(context).textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: titleColor,
+                fontWeight: FontWeight.w700,
+              ),
         ),
         if (anime.titleJapanese?.isNotEmpty == true) ...[
           const SizedBox(height: 8),
           Text(
             anime.titleJapanese!,
-            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: subtitleColor,
+                ),
+          ),
+        ],
+        if (anime.titleSynonyms.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            anime.titleSynonyms.take(3).join(' • '),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: subtitleColor,
+                ),
           ),
         ],
         const SizedBox(height: 16),
+        _ScorePanel(anime: anime),
+        const SizedBox(height: 16),
         Wrap(
+          alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
           children: metadata,
         ),
         const SizedBox(height: 16),
-        _LabelValueText(
-          label: 'Studios',
-          value: anime.studios.isNotEmpty
-              ? anime.studios.map((studio) => studio.name).join(', ')
-              : 'Unknown',
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 14.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LabelValueText(
+                  label: 'Studios',
+                  value: anime.studios.isNotEmpty
+                      ? anime.studios.map((studio) => studio.name).join(', ')
+                      : 'Unknown',
+                  labelColor: subtitleColor,
+                  valueColor: titleColor,
+                ),
+                _LabelValueText(
+                  label: 'Genres',
+                  value: anime.genres.isNotEmpty
+                      ? anime.genres.map((genre) => genre.name).join(', ')
+                      : 'Unknown',
+                  labelColor: subtitleColor,
+                  valueColor: titleColor,
+                ),
+                if (anime.duration?.isNotEmpty == true)
+                  _LabelValueText(
+                    label: 'Duration',
+                    value: anime.duration!,
+                    labelColor: subtitleColor,
+                    valueColor: titleColor,
+                  ),
+                if (anime.rating?.isNotEmpty == true)
+                  _LabelValueText(
+                    label: 'Rating',
+                    value: anime.rating!,
+                    labelColor: subtitleColor,
+                    valueColor: titleColor,
+                  ),
+                if (anime.source?.isNotEmpty == true)
+                  _LabelValueText(
+                    label: 'Source',
+                    value: anime.source!,
+                    labelColor: subtitleColor,
+                    valueColor: titleColor,
+                  ),
+              ],
+            ),
+          ),
         ),
-        _LabelValueText(
-          label: 'Genres',
-          value: anime.genres.isNotEmpty
-              ? anime.genres.map((genre) => genre.name).join(', ')
-              : 'Unknown',
-        ),
-        if (anime.duration?.isNotEmpty == true)
-          _LabelValueText(label: 'Duration', value: anime.duration!),
-        if (anime.rating?.isNotEmpty == true)
-          _LabelValueText(label: 'Rating', value: anime.rating!),
-        if (anime.source?.isNotEmpty == true)
-          _LabelValueText(label: 'Source', value: anime.source!),
       ],
+    );
+  }
+}
+
+class _ScorePanel extends StatelessWidget {
+  final Anime anime;
+
+  const _ScorePanel({required this.anime});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 14.0,
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 24,
+          runSpacing: 16,
+          children: [
+            _HeroStat(
+              label: 'User score',
+              value: anime.score?.toStringAsFixed(2) ?? 'N/A',
+              icon: Symbols.star_rounded,
+            ),
+            _HeroStat(
+              label: 'Rank',
+              value: anime.rank != null ? '#${anime.rank}' : 'Unranked',
+              icon: Symbols.leaderboard_rounded,
+            ),
+            _HeroStat(
+              label: 'Popularity',
+              value: anime.popularity != null ? '#${anime.popularity}' : 'N/A',
+              icon: Symbols.thumb_up_rounded,
+            ),
+            _HeroStat(
+              label: 'Members',
+              value: anime.members?.toString() ?? 'N/A',
+              icon: Symbols.groups_rounded,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 132,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.amber, size: 18),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -315,14 +514,22 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge,
+              title.toUpperCase(),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                  ),
             ),
             const SizedBox(height: 12),
             child,
@@ -387,7 +594,7 @@ class _InfoBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
@@ -395,9 +602,15 @@ class _InfoBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18),
+            Icon(icon, size: 18, color: Colors.white),
             const SizedBox(width: 6),
-            Text(label),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -408,10 +621,14 @@ class _InfoBadge extends StatelessWidget {
 class _LabelValueText extends StatelessWidget {
   final String label;
   final String value;
+  final Color? labelColor;
+  final Color? valueColor;
 
   const _LabelValueText({
     required this.label,
     required this.value,
+    this.labelColor,
+    this.valueColor,
   });
 
   @override
@@ -420,11 +637,16 @@ class _LabelValueText extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: RichText(
         text: TextSpan(
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: valueColor,
+              ),
           children: [
             TextSpan(
               text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: labelColor,
+              ),
             ),
             TextSpan(text: value),
           ],
