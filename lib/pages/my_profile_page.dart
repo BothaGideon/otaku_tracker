@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
+import 'package:otaku_tracker/widgets/user_avatar.dart';
 
 class MyProfilePage extends ConsumerWidget {
   const MyProfilePage({super.key});
@@ -20,13 +20,14 @@ class MyProfilePage extends ConsumerWidget {
       body: userDataAsync.when(
         data: (userData) {
           final username = userData['username'];
+          final picture = userData['picture'];
 
           if (username == null) {
             return const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Symbols.account_circle, size: 72),
+                  UserAvatar(radius: 36.0, iconSize: 48.0),
                   SizedBox(height: 16),
                   Text(
                     'Please sign in from My List to view your profile.',
@@ -44,7 +45,11 @@ class MyProfilePage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Symbols.account_circle, size: 72),
+                    UserAvatar(
+                      pictureUrl: picture,
+                      radius: 36.0,
+                      iconSize: 48.0,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       username,

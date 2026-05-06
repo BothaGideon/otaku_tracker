@@ -92,7 +92,8 @@ void main() {
       createTestApp(
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': null, 'accessToken': null},
+            (ref) async =>
+                {'username': null, 'accessToken': null, 'picture': null},
           ),
         ],
       ),
@@ -109,7 +110,11 @@ void main() {
       createTestApp(
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': 'https://cdn.myanimelist.net/images/userimages/1.jpg',
+            },
           ),
           userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
         ],
@@ -117,7 +122,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Symbols.account_circle), findsOneWidget);
+    final avatar = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
+    expect(avatar.pictureUrl,
+        'https://cdn.myanimelist.net/images/userimages/1.jpg');
     expect(find.byType(ChoiceChip), findsNWidgets(MyListStatusFilter.values.length));
     expect(find.text('All'), findsOneWidget);
     expect(find.text('Plan to watch'), findsOneWidget);
@@ -129,7 +136,11 @@ void main() {
       createTestApp(
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
           ),
           userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
         ],
@@ -159,7 +170,11 @@ void main() {
         child: const MyProfilePage(),
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': 'https://cdn.myanimelist.net/images/userimages/2.jpg',
+            },
           ),
         ],
       ),
@@ -168,7 +183,9 @@ void main() {
 
     expect(find.text('My Profile'), findsOneWidget);
     expect(find.text('lumen'), findsOneWidget);
-    expect(find.byIcon(Symbols.account_circle), findsOneWidget);
+    final avatars = tester.widgetList<UserAvatar>(find.byType(UserAvatar)).toList();
+    expect(avatars.last.pictureUrl,
+        'https://cdn.myanimelist.net/images/userimages/2.jpg');
   });
 
   testWidgets('LandingPage app bar shows profile action when logged in',
@@ -178,7 +195,11 @@ void main() {
         child: const LandingPage(),
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': 'https://cdn.myanimelist.net/images/userimages/3.jpg',
+            },
           ),
           combinedAnimeListProvider.overrideWith(
             (ref) async => CombinedData(
@@ -196,6 +217,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('My Profile'), findsOneWidget);
+    final avatar = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
+    expect(avatar.pictureUrl,
+        'https://cdn.myanimelist.net/images/userimages/3.jpg');
   });
 
   testWidgets('shared app bar opens universal search and shows results',
@@ -205,7 +229,11 @@ void main() {
         child: const LandingPage(),
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
           ),
           animeListServiceProvider.overrideWith((ref) => FakeAnimeListService()),
           combinedAnimeListProvider.overrideWith(
@@ -241,7 +269,11 @@ void main() {
         child: const MyListPage(),
         overrides: [
           userDataProvider.overrideWith(
-            (ref) async => {'username': 'lumen', 'accessToken': 'token'},
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
           ),
           animeListServiceProvider.overrideWith((ref) => FakeAnimeListService()),
           userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),

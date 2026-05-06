@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_search_delegate.dart';
+import 'package:otaku_tracker/widgets/user_avatar.dart';
 
 class OtakuTrackerAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
@@ -23,6 +23,7 @@ class OtakuTrackerAppBar extends ConsumerWidget
     final userDataAsync = ref.watch(userDataProvider);
     final userData = userDataAsync.valueOrNull;
     final isLoggedIn = userData?['username'] != null;
+    final picture = userData?['picture'];
 
     return AppBar(
       title: title,
@@ -41,7 +42,11 @@ class OtakuTrackerAppBar extends ConsumerWidget
         if (showProfileAction && isLoggedIn)
           IconButton(
             tooltip: 'My Profile',
-            icon: const Icon(Symbols.account_circle),
+            icon: UserAvatar(
+              pictureUrl: picture,
+              radius: 14.0,
+              iconSize: 18.0,
+            ),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

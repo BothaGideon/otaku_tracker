@@ -33,7 +33,9 @@ class OauthService {
       dev.log('Authorization code received: $code');
 
       final tokenJson = await _generateTokens(verifier, code);
-      final username = await _getUserName(tokenJson['access_token']);
+      final userData = await getCurrentUserData(tokenJson['access_token']);
+      final username = userData['username'];
+      final picture = userData['picture'];
 
       dev.log('Login successful for user: $username');
       tokenJson['datetime'] = DateTime.now();
@@ -41,7 +43,12 @@ class OauthService {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', tokenJson['access_token']);
-      await prefs.setString('username', username);
+      await prefs.setString('username', username ?? '');
+      if (picture != null && picture.isNotEmpty) {
+        await prefs.setString('picture', picture);
+      } else {
+        await prefs.remove('picture');
+      }
 
       return username;
     } catch (e) {
@@ -72,11 +79,21 @@ class OauthService {
     return jsonDecode(response.body);
   }
 
-  Future<String> _getUserName(String accessToken) async {
-    const url = '$apiBaseUrl/users/@me';
+  Future<Map<String, String?>> getCurrentUserData(String accessToken) async {
+    const url = '$apiBaseUrl/users/@me?fields=picture';
     final response = await http
         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $accessToken'});
-    return jsonDecode(response.body)['name'];
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load user data: ${response.reasonPhrase}');
+    }
+
+    final userJson = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return {
+      'username': userJson['name'] as String?,
+      'picture': userJson['picture'] as String?,
+    };
   }
 
   Future<String?> getAccessToken() async {
@@ -87,5 +104,21 @@ class OauthService {
   Future<String?> getUsername() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('username');
+  }
+
+  Future<String?> getUserPicture() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('picture');
+  }
+
+  Future<void> saveUserPicture(String? picture) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (picture == null || picture.isEmpty) {
+      await prefs.remove('picture');
+      return;
+    }
+
+    await prefs.setString('picture', picture);
   }
 }

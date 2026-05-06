@@ -69,7 +69,19 @@ final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
   final oauthService = ref.read(oauthProvider);
   final username = await oauthService.getUsername();
   final accessToken = await oauthService.getAccessToken();
-  return {'username': username, 'accessToken': accessToken};
+  var picture = await oauthService.getUserPicture();
+
+  if (accessToken != null && username != null && (picture == null || picture.isEmpty)) {
+    final currentUserData = await oauthService.getCurrentUserData(accessToken);
+    picture = currentUserData['picture'];
+    await oauthService.saveUserPicture(picture);
+  }
+
+  return {
+    'username': username,
+    'accessToken': accessToken,
+    'picture': picture,
+  };
 });
 
 final userAnimeListProvider = FutureProvider<UserAnimeListDTO>((ref) async {
