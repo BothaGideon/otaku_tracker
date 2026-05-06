@@ -35,9 +35,10 @@ UserAnimeData buildUserAnimeData({
   required String title,
   required String status,
   int score = 0,
+  double? mean,
 }) {
   return UserAnimeData(
-    node: Node(id: id, title: title),
+    node: Node(id: id, title: title, mean: mean),
     listStatus: ListStatus(
       status: status,
       score: score,
@@ -138,17 +139,20 @@ void main() {
         title: 'Frieren',
         status: 'watching',
         score: 9,
+        mean: 8.9,
       ),
       buildUserAnimeData(
         id: 2,
         title: 'Cowboy Bebop',
         status: 'completed',
         score: 10,
+        mean: 8.8,
       ),
       buildUserAnimeData(
         id: 3,
         title: 'Monster',
         status: 'on_hold',
+        mean: 8.7,
       ),
     ],
   );
@@ -228,6 +232,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No titles in Dropped'), findsOneWidget);
+  });
+
+  testWidgets('My List falls back to the community mean when no user score exists',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'On hold'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Monster'), findsOneWidget);
+    final monsterPoster = tester.widget<PosterImageTitle>(
+      find.byWidgetPredicate(
+        (widget) => widget is PosterImageTitle && widget.title == 'Monster',
+      ),
+    );
+    expect(monsterPoster.userScore, 8.7);
   });
 
   testWidgets('My Profile renders the username when authenticated',

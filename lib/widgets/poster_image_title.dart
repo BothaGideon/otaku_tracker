@@ -5,7 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 class PosterImageTitle extends StatelessWidget {
   final Anime? anime;
   final String? userStatus;
-  final int? userScore;
+  final num? userScore;
   final String? imageUrl;
   final String? title;
 
@@ -48,7 +48,7 @@ class PosterImageTitle extends StatelessWidget {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
     final titleToUse = title ?? anime?.titleEnglish ?? anime?.title ?? '';
     final scoreToUse = userScore ?? anime?.score;
-    final popularityToUse = anime?.popularity;
+    final favoritesToUse = anime?.favorites;
 
     final hasImage = imageUrlToUse.isNotEmpty;
 
@@ -102,7 +102,9 @@ class PosterImageTitle extends StatelessWidget {
                                   ),
                                   Text(
                                     scoreToUse != null && scoreToUse > 0
-                                        ? scoreToUse.toString()
+                                        ? scoreToUse is double
+                                            ? scoreToUse.toStringAsFixed(1)
+                                            : scoreToUse.toString()
                                         : 'N/A',
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 14.0),
@@ -137,7 +139,7 @@ class PosterImageTitle extends StatelessWidget {
                                           Symbols.thumb_up_rounded),
                                     ),
                                     Text(
-                                      popularityToUse?.toString() ?? 'N/A',
+                                      favoritesToUse?.toString() ?? 'N/A',
                                       style: const TextStyle(
                                           color: Colors.white, fontSize: 14.0),
                                       textAlign: TextAlign.center,

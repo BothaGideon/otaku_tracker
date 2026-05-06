@@ -34,12 +34,14 @@ Node _$NodeFromJson(Map<String, dynamic> json) => Node(
       mainPicture: json['main_picture'] == null
           ? null
           : MainPicture.fromJson(json['main_picture'] as Map<String, dynamic>),
+      mean: (json['mean'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$NodeToJson(Node instance) => <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
       'main_picture': instance.mainPicture,
+      'mean': instance.mean,
     };
 
 MainPicture _$MainPictureFromJson(Map<String, dynamic> json) => MainPicture(

@@ -164,6 +164,9 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                         itemBuilder: (context, index) {
                           final userAnimeData = filteredList[index];
                           final node = userAnimeData.node;
+                          final displayedScore = userAnimeData.listStatus.score > 0
+                              ? userAnimeData.listStatus.score
+                              : node.mean;
 
                           return InkWell(
                             borderRadius: BorderRadius.circular(15),
@@ -172,9 +175,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                               imageUrl: node.mainPicture?.medium,
                               title: node.title,
                               userStatus: userAnimeData.listStatus.status,
-                              userScore: userAnimeData.listStatus.score > 0
-                                  ? userAnimeData.listStatus.score
-                                  : null,
+                              userScore: displayedScore,
                             ),
                           );
                         },

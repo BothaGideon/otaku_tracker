@@ -53,7 +53,7 @@ class AnimeListService {
   Future<UserAnimeListDTO> getUserAnimeList(String accessToken) async {
     final request = http.Request(
       'GET',
-      Uri.parse('https://api.myanimelist.net/v2/users/@me/animelist?limit=1000&fields=list_status'),
+      Uri.parse('https://api.myanimelist.net/v2/users/@me/animelist?limit=1000&fields=list_status,mean'),
     );
     request.headers.addAll({'Authorization': 'Bearer $accessToken'});
 
