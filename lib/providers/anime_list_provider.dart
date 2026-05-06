@@ -1,9 +1,9 @@
 import 'package:jikan_api/jikan_api.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
-import 'package:riverpod/riverpod.dart';
 
 final animeListServiceProvider = Provider<AnimeListService>((ref) {
   return AnimeListService();
@@ -103,4 +103,26 @@ final animeSearchProvider =
   final service = ref.read(animeListServiceProvider);
   final results = await service.searchAnime(trimmedQuery);
   return results.data;
+});
+
+class AnimeDetailsData {
+  final Anime anime;
+  final List<Recommendation> recommendations;
+
+  AnimeDetailsData({
+    required this.anime,
+    required this.recommendations,
+  });
+}
+
+final animeDetailsProvider =
+    FutureProvider.autoDispose.family<AnimeDetailsData, int>((ref, animeId) async {
+  final jikan = Jikan();
+  final anime = await jikan.getAnime(animeId);
+  final recommendations = await jikan.getAnimeRecommendations(animeId);
+
+  return AnimeDetailsData(
+    anime: anime,
+    recommendations: recommendations.toList(),
+  );
 });

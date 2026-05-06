@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jikan_api/jikan_api.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
+import 'package:otaku_tracker/pages/anime_details_page.dart';
 import 'package:otaku_tracker/pages/landing_page.dart';
 import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
@@ -61,6 +63,71 @@ class FakeAnimeListService extends AnimeListService {
 
     return AnimeDTO(data: []);
   }
+}
+
+Anime buildAnimeDetails({
+  required int id,
+  required String title,
+  String? synopsis,
+}) {
+  return Anime((b) => b
+    ..malId = id
+    ..url = 'https://example.com/anime/$id'
+    ..imageUrl = 'https://cdn.example.com/anime/$id.jpg'
+    ..title = title
+    ..titleEnglish = title
+    ..airing = false
+    ..score = 8.9
+    ..rank = 12
+    ..popularity = 34
+    ..type = 'TV'
+    ..status = 'Finished Airing'
+    ..episodes = 24
+    ..synopsis = synopsis ?? 'A detailed synopsis for $title.'
+    ..background = 'Background information for $title.'
+    ..season = 'fall'
+    ..year = 2023
+    ..rating = 'PG-13'
+    ..source = 'Light novel'
+    ..duration = '24 min per ep'
+    ..studios.add(Meta((b) => b
+      ..malId = 1
+      ..type = 'anime'
+      ..name = 'Madhouse'
+      ..url = 'https://example.com/studios/1'))
+    ..genres.addAll([
+      Meta((b) => b
+        ..malId = 2
+        ..type = 'anime'
+        ..name = 'Adventure'
+        ..url = 'https://example.com/genres/2'),
+      Meta((b) => b
+        ..malId = 3
+        ..type = 'anime'
+        ..name = 'Drama'
+        ..url = 'https://example.com/genres/3'),
+    ])
+    ..relations.add(Relation((b) => b
+      ..relation = 'Sequel'
+      ..entry.add(Meta((b) => b
+        ..malId = 999
+        ..type = 'anime'
+        ..name = '$title Season 2'
+        ..url = 'https://example.com/anime/999')))));
+}
+
+Recommendation buildRecommendation({
+  required int id,
+  required String title,
+  int votes = 123,
+}) {
+  return Recommendation((b) => b
+    ..entry.malId = id
+    ..entry.url = 'https://example.com/anime/$id'
+    ..entry.imageUrl = 'https://cdn.example.com/anime/$id.jpg'
+    ..entry.title = title
+    ..url = 'https://example.com/recommendations/$id'
+    ..votes = votes);
 }
 
 void main() {
@@ -289,6 +356,76 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No results for "zzzz"'), findsOneWidget);
+  });
+
+  testWidgets('AnimeDetailsPage renders synopsis, score, and related media',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: const AnimeDetailsPage(animeId: 1),
+        overrides: [
+          animeDetailsProvider.overrideWith(
+            (ref, animeId) async => AnimeDetailsData(
+              anime: buildAnimeDetails(id: animeId, title: 'Frieren'),
+              recommendations: [
+                buildRecommendation(id: 5, title: 'Delicious in Dungeon'),
+              ],
+            ),
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anime Details'), findsOneWidget);
+    expect(find.text('Frieren'), findsAtLeastNWidgets(1));
+    expect(find.text('Synopsis'), findsOneWidget);
+    expect(find.textContaining('A detailed synopsis for Frieren.'),
+        findsOneWidget);
+    expect(find.text('Related media'), findsOneWidget);
+    expect(find.text('Frieren Season 2'), findsOneWidget);
+    expect(find.text('Recommended next'), findsOneWidget);
+    expect(find.text('Delicious in Dungeon'), findsOneWidget);
+  });
+
+  testWidgets('tapping an anime from My List opens the details page',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+          animeDetailsProvider.overrideWith(
+            (ref, animeId) async => AnimeDetailsData(
+              anime: buildAnimeDetails(id: animeId, title: 'Frieren'),
+              recommendations: const [],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Frieren').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anime Details'), findsOneWidget);
+    expect(find.text('Synopsis'), findsOneWidget);
+    expect(find.textContaining('A detailed synopsis for Frieren.'),
+        findsOneWidget);
   });
 
   testWidgets('PosterImageTitle shows the fallback state without an image',

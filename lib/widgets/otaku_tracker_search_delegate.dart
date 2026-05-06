@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
@@ -86,9 +87,13 @@ class _SearchResults extends ConsumerWidget {
           itemBuilder: (context, index) {
             final anime = results[index].node;
 
-            return PosterImageTitle(
-              imageUrl: anime.mainPicture?.medium,
-              title: anime.title,
+            return InkWell(
+              borderRadius: BorderRadius.circular(15),
+              onTap: () => openAnimeDetailsPage(context, anime.id),
+              child: PosterImageTitle(
+                imageUrl: anime.mainPicture?.medium,
+                title: anime.title,
+              ),
             );
           },
         );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jikan_api/jikan_api.dart';
 
+import '../constants/anime_navigation.dart';
 import '../constants/anime_seasons_helper.dart';
 import '../providers/anime_list_provider.dart';
 import '../providers/season_state_provider.dart';
@@ -67,7 +68,7 @@ class SeasonalPage extends ConsumerWidget {
                     final anime = selectedAnimeList[index];
                     return GestureDetector(
                       onTap: () {
-                        print('Tapped on ${anime}');
+                        openAnimeDetailsPage(context, anime.malId);
                       },
                       child: PosterImageTitle(
                         anime: selectedAnimeList[index],

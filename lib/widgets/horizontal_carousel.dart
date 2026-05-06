@@ -1,21 +1,20 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:jikan_api/jikan_api.dart';
+import 'package:otaku_tracker/constants/anime_navigation.dart';
 
 import 'carousel_title_subtitle.dart';
 
 class HorizontalCarousel extends StatelessWidget {
   final List<Anime> animeList;
-  final Key key;
   final String title;
   final String? subtitle;
 
-  HorizontalCarousel(
-      {required this.key,
+  const HorizontalCarousel(
+      {super.key,
       required this.animeList,
       required this.title,
-      this.subtitle})
-      : super(key: key);
+      this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -41,41 +40,44 @@ class HorizontalCarousel extends StatelessWidget {
           ),
           items: animeList.map((animeData) {
             final anime = animeData;
-            final mainPicture = anime.imageUrl;
             return Builder(
               builder: (BuildContext context) {
-                return Container(
-                  width: MediaQuery.of(context).size.width * 0.33,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent,
-                  ),
-                  child: Column(
-                    children: [
-                      mainPicture != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: FadeInImage.assetNetwork(
-                                placeholder: 'assets/icons/logo_black.png',
-                                image: mainPicture,
-                                fit: BoxFit.cover,
+                return InkWell(
+                  borderRadius: BorderRadius.circular(15),
+                  onTap: () => openAnimeDetailsPage(context, anime.malId),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.33,
+                    margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    child: Column(
+                      children: [
+                        anime.imageUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: FadeInImage.assetNetwork(
+                                  placeholder: 'assets/icons/logo_black.png',
+                                  image: anime.imageUrl,
+                                  fit: BoxFit.cover,
+                                  height: 204.0,
+                                ),
+                              )
+                            : Container(
                                 height: 204.0,
+                                color: Colors.grey,
+                                child: const Icon(Icons.image_not_supported),
                               ),
-                            )
-                          : Container(
-                              height: 204.0,
-                              color: Colors.grey,
-                              child: const Icon(Icons.image_not_supported),
-                            ),
-                      const SizedBox(height: 10.0),
-                      Text(
-                        anime.titleEnglish ?? anime.title,
-                        style: const TextStyle(
-                            fontSize: 14.0, fontWeight: FontWeight.w400),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
+                        const SizedBox(height: 10.0),
+                        Text(
+                          anime.titleEnglish ?? anime.title,
+                          style: const TextStyle(
+                              fontSize: 14.0, fontWeight: FontWeight.w400),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

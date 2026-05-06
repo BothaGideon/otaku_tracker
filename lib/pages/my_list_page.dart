@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
@@ -164,13 +165,17 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                           final userAnimeData = filteredList[index];
                           final node = userAnimeData.node;
 
-                          return PosterImageTitle(
-                            imageUrl: node.mainPicture?.medium,
-                            title: node.title,
-                            userStatus: userAnimeData.listStatus.status,
-                            userScore: userAnimeData.listStatus.score > 0
-                                ? userAnimeData.listStatus.score
-                                : null,
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(15),
+                            onTap: () => openAnimeDetailsPage(context, node.id),
+                            child: PosterImageTitle(
+                              imageUrl: node.mainPicture?.medium,
+                              title: node.title,
+                              userStatus: userAnimeData.listStatus.status,
+                              userScore: userAnimeData.listStatus.score > 0
+                                  ? userAnimeData.listStatus.score
+                                  : null,
+                            ),
                           );
                         },
                       );

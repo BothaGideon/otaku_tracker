@@ -60,12 +60,20 @@ class PosterImageTitle extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.bottomCenter,
                   children: [
-                    FadeInImage.assetNetwork(
-                      placeholder: 'assets/icons/logo_black.png',
-                      image: imageUrlToUse,
+                    Image.network(
+                      imageUrlToUse,
                       fit: BoxFit.cover,
                       height: 260.0,
                       width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 260.0,
+                          width: double.infinity,
+                          color: Colors.grey,
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.image_not_supported),
+                        );
+                      },
                     ),
                     Positioned.fill(
                       child: DecoratedBox(
