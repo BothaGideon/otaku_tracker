@@ -71,3 +71,4 @@ This file is for coding agents and LLM assistants working in this repository.
 ## Domain Knowledge
 
 - In `PosterImageTitle`, the thumbs-up icon represents the anime favorites count, not the popularity rank.
+- The anime details hero poster should be a plain rounded poster image only. It should not reuse `PosterImageTitle`, and it should not show overlay stats, favorites, score, or the small title underneath.

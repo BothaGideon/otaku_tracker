@@ -3,7 +3,6 @@ import 'package:jikan_api/jikan_api.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
-import 'package:otaku_tracker/widgets/poster_image_title.dart';
 
 class AnimeDetailsContent extends StatelessWidget {
   final AnimeDetailsData details;
@@ -94,10 +93,8 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                         children: [
                           SizedBox(
                             width: 220,
-                            child: PosterImageTitle(
-                              anime: anime,
-                              showBottomTitle: false,
-                              showAuxiliaryStatWhenNoStatus: false,
+                            child: AnimeDetailsHeroPoster(
+                              imageUrl: anime.imageUrl,
                             ),
                           ),
                           const SizedBox(width: 24),
@@ -116,10 +113,8 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: 220,
-                          child: PosterImageTitle(
-                            anime: anime,
-                            showBottomTitle: false,
-                            showAuxiliaryStatWhenNoStatus: false,
+                          child: AnimeDetailsHeroPoster(
+                            imageUrl: anime.imageUrl,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -254,6 +249,47 @@ class AnimeDetailsHeroContent extends StatelessWidget {
           valueColor: titleColor,
         ),
       ],
+    );
+  }
+}
+
+class AnimeDetailsHeroPoster extends StatelessWidget {
+  final String imageUrl;
+
+  const AnimeDetailsHeroPoster({
+    super.key,
+    required this.imageUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = imageUrl.isNotEmpty;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: hasImage
+          ? Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              height: 260.0,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 260.0,
+                  width: double.infinity,
+                  color: Colors.grey,
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.image_not_supported),
+                );
+              },
+            )
+          : Container(
+              height: 260.0,
+              width: double.infinity,
+              color: Colors.grey,
+              alignment: Alignment.center,
+              child: const Icon(Icons.image_not_supported),
+            ),
     );
   }
 }
