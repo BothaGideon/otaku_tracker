@@ -66,3 +66,8 @@ This file is for coding agents and LLM assistants working in this repository.
 - If a page file contains substantial styling/content widgets, extract them into `lib/widgets/`.
 - If a widget is only used by one page but clearly represents a standalone UI section, it should still live in `lib/widgets/` if that keeps the page focused.
 - Favor explicit, readable widget composition over clever abstractions.
+- When the user provides domain knowledge or corrects product semantics, update `AGENTS.md` to capture that guidance so future work keeps using it.
+
+## Domain Knowledge
+
+- In `PosterImageTitle`, the thumbs-up icon represents the anime favorites count, not the popularity rank.

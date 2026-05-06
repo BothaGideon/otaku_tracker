@@ -8,6 +8,8 @@ class PosterImageTitle extends StatelessWidget {
   final num? userScore;
   final String? imageUrl;
   final String? title;
+  final bool showBottomTitle;
+  final bool showAuxiliaryStatWhenNoStatus;
 
   const PosterImageTitle({
     super.key,
@@ -16,6 +18,8 @@ class PosterImageTitle extends StatelessWidget {
     this.userScore,
     this.imageUrl,
     this.title,
+    this.showBottomTitle = true,
+    this.showAuxiliaryStatWhenNoStatus = true,
   });
 
   Color _getStatusColor(String status) {
@@ -129,7 +133,7 @@ class PosterImageTitle extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              else
+                              else if (showAuxiliaryStatWhenNoStatus)
                                 Row(
                                   children: [
                                     const Padding(
@@ -159,13 +163,15 @@ class PosterImageTitle extends StatelessWidget {
                 color: Colors.grey,
                 child: const Icon(Icons.image_not_supported),
               ),
-        const SizedBox(height: 10.0),
-        Text(
-          titleToUse,
-          style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
+        if (showBottomTitle) ...[
+          const SizedBox(height: 10.0),
+          Text(
+            titleToUse,
+            style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
+        ],
       ],
     );
   }

@@ -94,7 +94,11 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                         children: [
                           SizedBox(
                             width: 220,
-                            child: PosterImageTitle(anime: anime),
+                            child: PosterImageTitle(
+                              anime: anime,
+                              showBottomTitle: false,
+                              showAuxiliaryStatWhenNoStatus: false,
+                            ),
                           ),
                           const SizedBox(width: 24),
                           Expanded(
@@ -112,7 +116,11 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: 220,
-                          child: PosterImageTitle(anime: anime),
+                          child: PosterImageTitle(
+                            anime: anime,
+                            showBottomTitle: false,
+                            showAuxiliaryStatWhenNoStatus: false,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         AnimeDetailsHeroContent(
