@@ -6,6 +6,27 @@ import 'package:otaku_tracker/models/response/anime.dart';
 class AnimeListService {
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
+  Future<AnimeDTO> searchAnime(String query, {int limit = 30}) async {
+    final request = http.Request(
+      'GET',
+      Uri.parse(
+          'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit'),
+    );
+    request.headers.addAll(headers);
+
+    final streamedResponse = await request.send();
+
+    if (streamedResponse.statusCode == 200) {
+      final response = await http.Response.fromStream(streamedResponse);
+      final jsonResponse = convert.json.decode(response.body);
+
+      return AnimeDTO.fromJson(jsonResponse);
+    } else {
+      throw Exception(
+          'Failed to search anime: ${streamedResponse.reasonPhrase}');
+    }
+  }
+
   Future<AnimeDTO> getAnimeList() async {
     final request = http.Request(
       'GET',

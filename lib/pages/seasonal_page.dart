@@ -6,6 +6,7 @@ import '../constants/anime_seasons_helper.dart';
 import '../providers/anime_list_provider.dart';
 import '../providers/season_state_provider.dart';
 import '../widgets/loading_error_state.dart';
+import '../widgets/otaku_tracker_app_bar.dart';
 import '../widgets/poster_image_title.dart';
 
 class SeasonalPage extends ConsumerWidget {
@@ -17,7 +18,7 @@ class SeasonalPage extends ConsumerWidget {
     final selection = ref.watch(seasonSelectionProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Seasonal Page')),
+      appBar: const OtakuTrackerAppBar(title: Text('Seasonal Page')),
       body: Column(
         children: [
           SegmentedButton<SeasonSelectionFilter>(

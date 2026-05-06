@@ -5,6 +5,10 @@ import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:riverpod/riverpod.dart';
 
+final animeListServiceProvider = Provider<AnimeListService>((ref) {
+  return AnimeListService();
+});
+
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   final jikan = Jikan();
   final season = AnimeSeasonsHelper().getCurrentSeason();
@@ -72,6 +76,19 @@ final userAnimeListProvider = FutureProvider<UserAnimeListDTO>((ref) async {
   final oauthService = ref.read(oauthProvider);
   final accessToken = await oauthService.getAccessToken();
   if (accessToken == null) throw Exception('Not logged in');
-  final service = AnimeListService();
+  final service = ref.read(animeListServiceProvider);
   return service.getUserAnimeList(accessToken);
+});
+
+final animeSearchProvider =
+    FutureProvider.autoDispose.family<List<AnimeData>, String>((ref, query) async {
+  final trimmedQuery = query.trim();
+
+  if (trimmedQuery.isEmpty) {
+    return const [];
+  }
+
+  final service = ref.read(animeListServiceProvider);
+  final results = await service.searchAnime(trimmedQuery);
+  return results.data;
 });

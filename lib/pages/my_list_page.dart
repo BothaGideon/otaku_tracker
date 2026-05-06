@@ -3,38 +3,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
+import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
+import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
-import 'package:otaku_tracker/widgets/user_anime_item.dart';
+import 'package:otaku_tracker/widgets/poster_image_title.dart';
 
 class MyListPage extends ConsumerStatefulWidget {
+  const MyListPage({super.key});
+
   @override
-  _MyListPageState createState() => _MyListPageState();
+  ConsumerState<MyListPage> createState() => _MyListPageState();
 }
 
 class _MyListPageState extends ConsumerState<MyListPage> {
-  String selectedStatus = 'all';
   bool isLoading = false;
-
-  static const List<String> statuses = [
-    'all',
-    'watching',
-    'completed',
-    'on_hold',
-    'dropped',
-    'plan_to_watch'
-  ];
 
   @override
   Widget build(BuildContext context) {
     final oauthService = ref.read(oauthProvider);
     final userDataAsync = ref.watch(userDataProvider);
+    final selectedStatus = ref.watch(myListFilterProvider);
 
     return userDataAsync.when(
       data: (userData) {
         if (userData['username'] == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('My List')),
+            appBar: const OtakuTrackerAppBar(title: Text('My List')),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -50,8 +45,14 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                             try {
                               final result = await oauthService.login();
 
+                              if (!mounted) {
+                                return;
+                              }
+
                               if (result != null &&
                                   !result.startsWith('An error occurred')) {
+                                ref.invalidate(userDataProvider);
+                                ref.invalidate(userAnimeListProvider);
                                 setState(() {
                                   isLoading = false;
                                 });
@@ -71,6 +72,10 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                                 );
                               }
                             } catch (e) {
+                              if (!mounted) {
+                                return;
+                              }
+
                               setState(() {
                                 isLoading = false;
                               });
@@ -100,35 +105,51 @@ class _MyListPageState extends ConsumerState<MyListPage> {
           final userAnimeAsync = ref.watch(userAnimeListProvider);
 
           return Scaffold(
-            appBar: AppBar(title: const Text('My List')),
+            appBar: const OtakuTrackerAppBar(title: Text('My List')),
             body: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: DropdownButton<String>(
-                    value: selectedStatus,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStatus = value!;
-                      });
-                    },
-                    items: statuses
-                        .map((status) => DropdownMenuItem(
-                              value: status,
-                              child: Text(status.replaceAll('_', ' ')),
-                            ))
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: MyListStatusFilter.values
+                          .map(
+                            (status) => ChoiceChip(
+                              label: Text(status.label),
+                              selected: selectedStatus == status,
+                              onSelected: (_) {
+                                ref.read(myListFilterProvider.notifier).state =
+                                    status;
+                              },
+                            ),
+                          )
                         .toList(),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: userAnimeAsync.when(
                     data: (userAnimeList) {
-                      final filteredList = selectedStatus == 'all'
+                      final filteredList =
+                          selectedStatus == MyListStatusFilter.all
                           ? userAnimeList.data
                           : userAnimeList.data
                               .where((item) =>
-                                  item.listStatus.status == selectedStatus)
+                                  item.listStatus.status ==
+                                  selectedStatus.apiValue)
                               .toList();
+
+                      if (filteredList.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No titles in ${selectedStatus.label}',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
 
                       return GridView.builder(
                         itemCount: filteredList.length,
@@ -140,8 +161,17 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                           childAspectRatio: 0.6,
                         ),
                         itemBuilder: (context, index) {
-                          return UserAnimeItem(
-                              userAnimeData: filteredList[index]);
+                          final userAnimeData = filteredList[index];
+                          final node = userAnimeData.node;
+
+                          return PosterImageTitle(
+                            imageUrl: node.mainPicture?.medium,
+                            title: node.title,
+                            userStatus: userAnimeData.listStatus.status,
+                            userScore: userAnimeData.listStatus.score > 0
+                                ? userAnimeData.listStatus.score
+                                : null,
+                          );
                         },
                       );
                     },

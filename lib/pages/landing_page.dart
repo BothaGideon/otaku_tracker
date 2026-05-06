@@ -6,10 +6,13 @@ import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/carousel_list_order_provider.dart';
 import 'package:otaku_tracker/widgets/horizontal_carousel.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
+import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 
 import '../providers/anime_list_provider.dart';
 
 class LandingPage extends ConsumerWidget {
+  const LandingPage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // MAL API calls
@@ -21,8 +24,8 @@ class LandingPage extends ConsumerWidget {
         '${StringUtils.capitalize(AnimeSeasonsHelper().getPreviousSeason().seasonType.name)} ${AnimeSeasonsHelper().getPreviousSeason().year}';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Anime List'),
+      appBar: const OtakuTrackerAppBar(
+        title: Text('Anime List'),
       ),
       body: combinedListAsyncValue.when(
         data: (combinedList) {
