@@ -29,6 +29,7 @@
 .pub/
 /build/
 /api-keys.json
+devtools_options.yaml
 
 # Android related
 **/android/**/gradle-wrapper.jar

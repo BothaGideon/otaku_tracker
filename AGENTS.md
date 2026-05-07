@@ -68,6 +68,22 @@ This file is for coding agents and LLM assistants working in this repository.
 - Favor explicit, readable widget composition over clever abstractions.
 - When the user provides domain knowledge or corrects product semantics, update `AGENTS.md` to capture that guidance so future work keeps using it.
 
+## Planning rules
+- For multi-step tasks, break down the implementation into clear steps before coding.
+- For example, if implementing a new feature that requires both API changes and UI changes, plan the API work first, then the UI work, and ensure each step is independently verifiable.
+- For UI changes, plan the widget hierarchy and data flow before writing code, to ensure a clear separation of concerns and adherence to the architecture rules.
+- When planning, also consider edge cases and error states, and ensure that the implementation will handle them gracefully.
+- For any new features that require user input or interaction, plan the user flow and how the UI will guide the user through the process, ensuring a good user experience.
+- For any changes that affect the data model or API interactions, plan how the data will be fetched, stored, and passed to the UI, ensuring that it follows the existing patterns in the codebase and does not introduce unnecessary complexity.
+- When planning, also consider how the changes will be tested, and ensure that there are clear test cases for both the happy path and any edge cases or error states that may arise from the new implementation.
+- For any new widgets or UI components, plan the styling and layout, ensuring that it is consistent with the existing design language of the app and provides a cohesive user experience.
+- When planning, also consider the performance implications of the changes, and ensure that any new features or UI components are optimized for smooth performance, especially on lower-end devices or in scenarios with limited resources.
+- For any changes that involve navigation or user flow, plan how the user will move through the app, and ensure that the navigation is intuitive and follows established patterns in the app, providing a seamless experience for the user.
+- When planning, also consider how the changes will affect the overall architecture of the app, and ensure that they fit well within the existing structure and do not introduce unnecessary coupling or complexity, while still achieving the desired functionality and user experience.
+- For any changes that involve state management, plan how the state will be managed and updated, ensuring that it follows the existing patterns in the codebase and does not introduce unnecessary complexity or bugs, while still providing a clear and maintainable way to manage the state of the app.
+- Create a markdown checklist inside the repo for the implementation steps, and check off each step as it is completed, to ensure that the implementation is thorough and follows the planned approach, while also providing a clear record of the work that was done and any decisions that were made along the way.
+- For any changes that involve user input or interaction, plan how the app will validate and handle that input, ensuring that it provides clear feedback to the user and handles any errors or edge cases gracefully, while still providing a good user experience.
+
 ## Domain Knowledge
 
 - In `PosterImageTitle`, the thumbs-up icon represents the anime favorites count, not the popularity rank.
