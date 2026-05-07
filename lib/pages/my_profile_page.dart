@@ -167,13 +167,11 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
                               children: [
                                 SizedBox(
-                                  width: 180,
+                                  width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'Episodes watched',
+                                    label: 'episodes watched',
                                     value: _formatEpisodes(
                                       animeStatistics['numEpisodes'],
                                     ),
@@ -181,9 +179,9 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 180,
+                                  width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'Days spent watching',
+                                    label: 'days spent watching',
                                     value: _formatDaysWatched(
                                       animeStatistics['numDaysWatched'],
                                     ),
@@ -191,9 +189,9 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 180,
+                                  width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'Mean completed score',
+                                    label: 'average completed score',
                                     value: _formatMeanScore(
                                       animeStatistics['meanScore'],
                                     ),
@@ -277,7 +275,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Connected account',
+                        'Disclaimer',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
@@ -296,7 +294,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .colorScheme
-                      .errorContainer
+                      .surfaceContainer
                       .withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -306,17 +304,12 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                   children: [
                     Text(
                       'Logout',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onErrorContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Need to switch accounts or disconnect this device? Logging out clears your saved MyAnimeList session from Otaku Tracker.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onErrorContainer,
-                          ),
+                      style: Theme.of(context).textTheme.bodyMedium
                     ),
                     const SizedBox(height: 16),
                     Align(
@@ -332,7 +325,8 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.logout_rounded),
                         label: Text(
@@ -374,22 +368,27 @@ class _ProfileJourneyStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 10),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              ],
             ),
           ],
         ),
