@@ -59,7 +59,16 @@ class FakeAnimeListService extends AnimeListService {
       return AnimeDTO(
         data: [
           AnimeData(
-            node: Node(id: 10, title: 'Steins;Gate'),
+            node: Node(
+              id: 10,
+              title: 'Steins;Gate',
+              mainPicture: MainPicture(
+                medium: 'https://cdn.example.com/anime/10-medium.jpg',
+                large: 'https://cdn.example.com/anime/10-large.jpg',
+              ),
+              mean: 9.1,
+              numScoringUsers: 987654,
+            ),
           ),
         ],
       );
@@ -571,6 +580,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Steins;Gate'), findsOneWidget);
+    expect(find.text('9.1'), findsOneWidget);
+    expect(find.text('987654'), findsOneWidget);
   });
 
   testWidgets('search results do not overflow on compact widths',

@@ -93,6 +93,9 @@ class _SearchResults extends ConsumerWidget {
               child: PosterImageTitle(
                 imageUrl: anime.mainPicture?.medium,
                 title: anime.title,
+                userScore: anime.mean,
+                auxiliaryStatValue: anime.numScoringUsers,
+                auxiliaryStatIcon: Icons.people_alt_rounded,
               ),
             );
           },

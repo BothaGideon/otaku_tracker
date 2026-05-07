@@ -10,6 +10,8 @@ class PosterImageTitle extends StatelessWidget {
   final String? title;
   final bool showBottomTitle;
   final bool showAuxiliaryStatWhenNoStatus;
+  final num? auxiliaryStatValue;
+  final IconData auxiliaryStatIcon;
 
   const PosterImageTitle({
     super.key,
@@ -20,6 +22,8 @@ class PosterImageTitle extends StatelessWidget {
     this.title,
     this.showBottomTitle = true,
     this.showAuxiliaryStatWhenNoStatus = true,
+    this.auxiliaryStatValue,
+    this.auxiliaryStatIcon = Symbols.thumb_up_rounded,
   });
 
   Color _getStatusColor(String status) {
@@ -52,7 +56,7 @@ class PosterImageTitle extends StatelessWidget {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
     final titleToUse = title ?? anime?.titleEnglish ?? anime?.title ?? '';
     final scoreToUse = userScore ?? anime?.score;
-    final favoritesToUse = anime?.favorites;
+    final auxiliaryStatToUse = auxiliaryStatValue ?? anime?.favorites;
 
     final hasImage = imageUrlToUse.isNotEmpty;
 
@@ -136,14 +140,14 @@ class PosterImageTitle extends StatelessWidget {
                               else if (showAuxiliaryStatWhenNoStatus)
                                 Row(
                                   children: [
-                                    const Padding(
+                                    Padding(
                                       padding: EdgeInsets.only(right: 3.0),
                                       child: Icon(
                                           size: 16.0,
-                                          Symbols.thumb_up_rounded),
+                                          auxiliaryStatIcon),
                                     ),
                                     Text(
-                                      favoritesToUse?.toString() ?? 'N/A',
+                                      auxiliaryStatToUse?.toString() ?? 'N/A',
                                       style: const TextStyle(
                                           color: Colors.white, fontSize: 14.0),
                                       textAlign: TextAlign.center,

@@ -10,7 +10,7 @@ class AnimeListService {
     final request = http.Request(
       'GET',
       Uri.parse(
-          'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit'),
+          'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit&fields=mean,num_scoring_users'),
     );
     request.headers.addAll(headers);
 
