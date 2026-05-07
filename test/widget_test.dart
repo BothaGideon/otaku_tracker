@@ -10,7 +10,9 @@ import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
+import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
+import 'package:otaku_tracker/services/oauth_service.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
 
@@ -63,6 +65,54 @@ class FakeAnimeListService extends AnimeListService {
     }
 
     return AnimeDTO(data: []);
+  }
+}
+
+
+class FakeOauthService extends OauthService {
+  FakeOauthService({
+    this.username,
+    this.accessToken,
+    this.picture,
+    this.animeStatistics,
+  });
+
+  String? username;
+  String? accessToken;
+  String? picture;
+  Map<String, num?>? animeStatistics;
+  bool didLogout = false;
+
+  @override
+  Future<Map<String, Object?>> getCurrentUserData(String accessToken) async {
+    return {
+      'username': username,
+      'picture': picture,
+      'animeStatistics': animeStatistics,
+    };
+  }
+
+  @override
+  Future<String?> getAccessToken() async => accessToken;
+
+  @override
+  Future<String?> getUsername() async => username;
+
+  @override
+  Future<String?> getUserPicture() async => picture;
+
+  @override
+  Future<void> saveUserPicture(String? picture) async {
+    this.picture = picture;
+  }
+
+  @override
+  Future<void> logout() async {
+    didLogout = true;
+    username = null;
+    accessToken = null;
+    picture = null;
+    animeStatistics = null;
   }
 }
 
@@ -264,17 +314,22 @@ void main() {
     expect(monsterPoster.userScore, 8.7);
   });
 
-  testWidgets('My Profile renders the username when authenticated',
+  testWidgets('My Profile renders journey stats and separated logout action',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       createTestApp(
         child: const MyProfilePage(),
         overrides: [
-          userDataProvider.overrideWith(
+          currentUserProfileProvider.overrideWith(
             (ref) async => {
               'username': 'lumen',
               'accessToken': 'token',
               'picture': 'https://cdn.myanimelist.net/images/userimages/2.jpg',
+              'animeStatistics': {
+                'numEpisodes': 412,
+                'numDaysWatched': 123.4,
+                'meanScore': 8.56,
+              },
             },
           ),
         ],
@@ -284,9 +339,70 @@ void main() {
 
     expect(find.text('My Profile'), findsOneWidget);
     expect(find.text('lumen'), findsOneWidget);
-    final avatars = tester.widgetList<UserAvatar>(find.byType(UserAvatar)).toList();
-    expect(avatars.last.pictureUrl,
-        'https://cdn.myanimelist.net/images/userimages/2.jpg');
+    expect(find.text('Your anime journey'), findsOneWidget);
+    expect(find.text('Episodes watched'), findsOneWidget);
+    expect(find.text('Days spent watching'), findsOneWidget);
+    expect(find.text('Mean completed score'), findsOneWidget);
+    expect(find.text('412'), findsOneWidget);
+    expect(find.text('123.4'), findsOneWidget);
+    expect(find.text('8.56'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Logout'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Logout'), findsWidgets);
+    expect(find.text('Log out'), findsOneWidget);
+    expect(find.text('A few nice-to-know stats from your MyAnimeList profile.'), findsOneWidget);
+  });
+
+  testWidgets('My Profile logout journey clears the session',
+      (WidgetTester tester) async {
+    final fakeOauthService = FakeOauthService(
+      username: 'lumen',
+      accessToken: 'token',
+      picture: 'https://cdn.myanimelist.net/images/userimages/2.jpg',
+      animeStatistics: {
+        'numEpisodes': 412,
+        'numDaysWatched': 123.4,
+        'meanScore': 8.56,
+      },
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const MyProfilePage(),
+        overrides: [
+          oauthProvider.overrideWith((ref) => fakeOauthService),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Log out'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Log out').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out of MyAnimeList?'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Log out'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(fakeOauthService.didLogout, isTrue);
+    expect(find.text('Please sign in from My List to view your profile.'),
+        findsOneWidget);
   });
 
   testWidgets('LandingPage app bar shows profile action when logged in',

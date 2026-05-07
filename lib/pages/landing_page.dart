@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
-import 'package:otaku_tracker/providers/carousel_list_order_provider.dart';
 import 'package:otaku_tracker/widgets/horizontal_carousel.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
@@ -17,7 +16,6 @@ class LandingPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // MAL API calls
     final combinedListAsyncValue = ref.watch(combinedAnimeListProvider);
-    final carouselListOrderValues = ref.watch(carouselListOrderProvider);
     final currentSeason =
         '${StringUtils.capitalize(AnimeSeasonsHelper().getCurrentSeason().seasonType.name)} ${AnimeSeasonsHelper().getCurrentSeason().year}';
     final previousSeason =
@@ -78,11 +76,7 @@ class LandingPage extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => LoadingErrorState(
-          onRetry: () {
-            print('Retry pressed');
-            print(error);
-            print(stack);
-          },
+          onRetry: () => ref.invalidate(combinedAnimeListProvider),
         ),
       ),
     );
@@ -117,9 +111,7 @@ class ScrollingList extends StatelessWidget {
               child: const Icon(Icons.image_not_supported),
             ),
       title: Text(anime.title),
-      onTap: () {
-        print('Tapped on ${anime.title}');
-      },
+      onTap: () {},
     );
   }
 }

@@ -86,11 +86,7 @@ class SeasonalPage extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => LoadingErrorState(
-                onRetry: () {
-                  print('Retry pressed');
-                  print(error);
-                  print(stack);
-                },
+                onRetry: () => ref.invalidate(combinedAnimeListProvider),
               ),
             ),
           ),

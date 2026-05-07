@@ -34,8 +34,8 @@ class OauthService {
 
       final tokenJson = await _generateTokens(verifier, code);
       final userData = await getCurrentUserData(tokenJson['access_token']);
-      final username = userData['username'];
-      final picture = userData['picture'];
+      final username = userData['username'] as String?;
+      final picture = userData['picture'] as String?;
 
       dev.log('Login successful for user: $username');
       tokenJson['datetime'] = DateTime.now();
@@ -52,8 +52,8 @@ class OauthService {
 
       return username;
     } catch (e) {
-      dev.log("OAuth error: $e");
-      return "An error occurred during OAuth: $e";
+      dev.log('OAuth error: $e');
+      return 'An error occurred during OAuth: $e';
     }
   }
 
@@ -73,14 +73,14 @@ class OauthService {
       'client_id': clientId,
       'grant_type': 'authorization_code',
       'code': code,
-      'code_verifier': verifier
+      'code_verifier': verifier,
     };
     final response = await http.post(Uri.parse(tokenUri), body: params);
     return jsonDecode(response.body);
   }
 
-  Future<Map<String, String?>> getCurrentUserData(String accessToken) async {
-    const url = '$apiBaseUrl/users/@me?fields=picture';
+  Future<Map<String, Object?>> getCurrentUserData(String accessToken) async {
+    const url = '$apiBaseUrl/users/@me?fields=picture,anime_statistics';
     final response = await http
         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $accessToken'});
 
@@ -89,10 +89,22 @@ class OauthService {
     }
 
     final userJson = jsonDecode(response.body) as Map<String, dynamic>;
+    final animeStatisticsJson =
+        userJson['anime_statistics'] as Map<String, dynamic>?;
 
     return {
       'username': userJson['name'] as String?,
       'picture': userJson['picture'] as String?,
+      'animeStatistics': animeStatisticsJson == null
+          ? null
+          : {
+              'numEpisodes':
+                  (animeStatisticsJson['num_episodes'] as num?)?.toInt(),
+              'numDaysWatched':
+                  (animeStatisticsJson['num_days_watched'] as num?)?.toDouble(),
+              'meanScore':
+                  (animeStatisticsJson['mean_score'] as num?)?.toDouble(),
+            },
     };
   }
 
@@ -120,5 +132,12 @@ class OauthService {
     }
 
     await prefs.setString('picture', picture);
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    await prefs.remove('username');
+    await prefs.remove('picture');
   }
 }

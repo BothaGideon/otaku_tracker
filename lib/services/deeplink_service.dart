@@ -10,7 +10,7 @@ class DeepLinkService {
   Function(Uri)? _onDeepLinkReceived;
 
   void init() {
-    print("Deep link service init");
+    log('Deep link service init');
 
     // Handle initial deep link when app is launched
     _handleInitialLink();
@@ -43,18 +43,18 @@ class DeepLinkService {
   }
 
   void _handleDeepLink(Uri uri) {
-    print("Deep link received: $uri");
+    log('Deep link received: $uri');
 
     // Check if this is an OAuth callback
     if (uri.scheme == 'otaku.tracker' && uri.queryParameters.containsKey('code')) {
-      print("OAuth callback received with code: ${uri.queryParameters['code']}");
+      log('OAuth callback received with code: ${uri.queryParameters['code']}');
       // The OAuth service will handle this through FlutterWebAuth2
       return;
     }
 
     // Handle other deep links
     final code = uri.queryParameters['code'];
-    print("Deep link code: $code");
+    log('Deep link code: $code');
 
     if (uri.path == '/auth') {
       log('Authentication deep link received');

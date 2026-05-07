@@ -73,7 +73,7 @@ final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
 
   if (accessToken != null && username != null && (picture == null || picture.isEmpty)) {
     final currentUserData = await oauthService.getCurrentUserData(accessToken);
-    picture = currentUserData['picture'];
+    picture = currentUserData['picture'] as String?;
     await oauthService.saveUserPicture(picture);
   }
 
@@ -81,6 +81,33 @@ final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
     'username': username,
     'accessToken': accessToken,
     'picture': picture,
+  };
+});
+
+final currentUserProfileProvider = FutureProvider<Map<String, Object?>>((ref) async {
+  final oauthService = ref.read(oauthProvider);
+  final username = await oauthService.getUsername();
+  final accessToken = await oauthService.getAccessToken();
+  final cachedPicture = await oauthService.getUserPicture();
+
+  if (accessToken == null || username == null) {
+    return {
+      'username': username,
+      'accessToken': accessToken,
+      'picture': cachedPicture,
+      'animeStatistics': null,
+    };
+  }
+
+  final currentUserData = await oauthService.getCurrentUserData(accessToken);
+  final picture = currentUserData['picture'] as String? ?? cachedPicture;
+  await oauthService.saveUserPicture(picture);
+
+  return {
+    'username': currentUserData['username'] as String? ?? username,
+    'accessToken': accessToken,
+    'picture': picture,
+    'animeStatistics': currentUserData['animeStatistics'],
   };
 });
 
