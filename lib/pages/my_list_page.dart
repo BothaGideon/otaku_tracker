@@ -31,74 +31,116 @@ class _MyListPageState extends ConsumerState<MyListPage> {
         if (userData['username'] == null) {
           return Scaffold(
             appBar: const OtakuTrackerAppBar(title: Text('My List')),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: isLoading
-                        ? null
-                        : () async {
-                            setState(() {
-                              isLoading = true;
-                            });
+            body: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              'assets/icons/mal_logo_short.png',
+                              height: 84,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Log in with MyAnimeList',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Connect your MAL account to sync your list and unlock your profile stats inside Otaku Tracker.',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            FilledButton.icon(
+                              onPressed: isLoading
+                                  ? null
+                                  : () async {
+                                      setState(() {
+                                        isLoading = true;
+                                      });
 
-                            try {
-                              final result = await oauthService.login();
+                                      try {
+                                        final result = await oauthService.login();
 
-                              if (!mounted) {
-                                return;
-                              }
+                                        if (!mounted) {
+                                          return;
+                                        }
 
-                              if (result != null &&
-                                  !result.startsWith('An error occurred')) {
-                                ref.invalidate(userDataProvider);
-                                ref.invalidate(userAnimeListProvider);
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                        if (result != null &&
+                                            !result.startsWith('An error occurred')) {
+                                          ref.invalidate(userDataProvider);
+                                          ref.invalidate(currentUserProfileProvider);
+                                          ref.invalidate(userAnimeListProvider);
+                                          setState(() {
+                                            isLoading = false;
+                                          });
 
-                                Fluttertoast.showToast(
-                                  msg: "Login successful",
-                                  backgroundColor: Colors.green,
-                                );
-                              } else {
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                          Fluttertoast.showToast(
+                                            msg: "Login successful",
+                                            backgroundColor: Colors.green,
+                                          );
+                                        } else {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
 
-                                Fluttertoast.showToast(
-                                  msg: result ?? "Login failed",
-                                  backgroundColor: Colors.red,
-                                );
-                              }
-                            } catch (e) {
-                              if (!mounted) {
-                                return;
-                              }
+                                          Fluttertoast.showToast(
+                                            msg: result ?? "Login failed",
+                                            backgroundColor: Colors.red,
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (!mounted) {
+                                          return;
+                                        }
 
-                              setState(() {
-                                isLoading = false;
-                              });
+                                        setState(() {
+                                          isLoading = false;
+                                        });
 
-                              Fluttertoast.showToast(
-                                msg: "Login failed: $e",
-                                backgroundColor: Colors.red,
-                              );
-                            }
-                          },
-                    child: isLoading
-                        ? const CircularProgressIndicator()
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Symbols.login),
-                              const SizedBox(width: 8),
-                              const Text('Authenticate with MyAnimeList'),
-                            ],
-                          ),
+                                        Fluttertoast.showToast(
+                                          msg: "Login failed: $e",
+                                          backgroundColor: Colors.red,
+                                        );
+                                      }
+                                    },
+                              icon: isLoading
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Symbols.login),
+                              label: Text(
+                                isLoading
+                                    ? 'Connecting to MyAnimeList...'
+                                    : 'Login with MyAnimeList',
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'We do not store your anime data. Otaku Tracker only interacts with the MyAnimeList API on your behalf.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           );

@@ -37,13 +37,18 @@ class OauthService {
       final username = userData['username'] as String?;
       final picture = userData['picture'] as String?;
 
+      if (username == null || username.isEmpty) {
+        dev.log('Login failed: username missing from MAL response');
+        return 'Login failed: MyAnimeList did not return a username';
+      }
+
       dev.log('Login successful for user: $username');
       tokenJson['datetime'] = DateTime.now();
       dev.log('Token data: $tokenJson');
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', tokenJson['access_token']);
-      await prefs.setString('username', username ?? '');
+      await prefs.setString('username', username);
       if (picture != null && picture.isNotEmpty) {
         await prefs.setString('picture', picture);
       } else {
@@ -98,10 +103,24 @@ class OauthService {
       'animeStatistics': animeStatisticsJson == null
           ? null
           : {
+              'numItemsWatching':
+                  (animeStatisticsJson['num_items_watching'] as num?)?.toInt(),
+              'numItemsCompleted':
+                  (animeStatisticsJson['num_items_completed'] as num?)?.toInt(),
+              'numItemsOnHold':
+                  (animeStatisticsJson['num_items_on_hold'] as num?)?.toInt(),
+              'numItemsDropped':
+                  (animeStatisticsJson['num_items_dropped'] as num?)?.toInt(),
+              'numItemsPlanToWatch':
+                  (animeStatisticsJson['num_items_plan_to_watch'] as num?)
+                      ?.toInt(),
+              'numItems': (animeStatisticsJson['num_items'] as num?)?.toInt(),
               'numEpisodes':
                   (animeStatisticsJson['num_episodes'] as num?)?.toInt(),
               'numDaysWatched':
                   (animeStatisticsJson['num_days_watched'] as num?)?.toDouble(),
+              'numTimesRewatched':
+                  (animeStatisticsJson['num_times_rewatched'] as num?)?.toInt(),
               'meanScore':
                   (animeStatisticsJson['mean_score'] as num?)?.toDouble(),
             },

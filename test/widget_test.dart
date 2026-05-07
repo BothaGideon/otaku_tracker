@@ -75,12 +75,20 @@ class FakeOauthService extends OauthService {
     this.accessToken,
     this.picture,
     this.animeStatistics,
+    this.loginUsername,
+    this.loginAccessToken = 'new-token',
+    this.loginPicture,
+    this.loginAnimeStatistics,
   });
 
   String? username;
   String? accessToken;
   String? picture;
   Map<String, num?>? animeStatistics;
+  String? loginUsername;
+  String? loginAccessToken;
+  String? loginPicture;
+  Map<String, num?>? loginAnimeStatistics;
   bool didLogout = false;
 
   @override
@@ -104,6 +112,16 @@ class FakeOauthService extends OauthService {
   @override
   Future<void> saveUserPicture(String? picture) async {
     this.picture = picture;
+  }
+
+  @override
+  Future<String?> login() async {
+    username = loginUsername;
+    accessToken = loginAccessToken;
+    picture = loginPicture;
+    animeStatistics = loginAnimeStatistics;
+
+    return loginUsername;
   }
 
   @override
@@ -221,8 +239,62 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Authenticate with MyAnimeList'), findsOneWidget);
+    expect(find.text('Log in with MyAnimeList'), findsOneWidget);
+    expect(find.text('Login with MyAnimeList'), findsOneWidget);
+    expect(find.textContaining('We do not store your anime data'), findsOneWidget);
     expect(find.byIcon(Symbols.account_circle), findsNothing);
+  });
+
+  testWidgets('logging in from My List refreshes My Profile statistics after a logout state',
+      (WidgetTester tester) async {
+    final fakeOauthService = FakeOauthService(
+      loginUsername: 'lumen',
+      loginAccessToken: 'token',
+      loginPicture: 'https://cdn.myanimelist.net/images/userimages/2.jpg',
+      loginAnimeStatistics: {
+        'numItemsWatching': 5,
+        'numItemsCompleted': 120,
+        'numItemsOnHold': 8,
+        'numItemsDropped': 3,
+        'numItemsPlanToWatch': 47,
+        'numItems': 183,
+        'numEpisodes': 412,
+        'numDaysWatched': 123.4,
+        'numTimesRewatched': 6,
+        'meanScore': 8.56,
+      },
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          oauthProvider.overrideWith((ref) => fakeOauthService),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log in with MyAnimeList'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Login with MyAnimeList'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('My Profile'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('My Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Your anime journey'), findsOneWidget);
+    expect(find.text('Episodes watched'), findsOneWidget);
+    expect(find.text('List breakdown'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('Plan to watch'), findsOneWidget);
+    expect(find.text('Rewatches'), findsOneWidget);
+    expect(find.text('412'), findsOneWidget);
+    expect(find.text('123.4'), findsOneWidget);
+    expect(find.text('8.56'), findsOneWidget);
+    expect(find.text('183'), findsOneWidget);
   });
 
   testWidgets('logged in My List shows profile action and filter chips',
@@ -326,8 +398,15 @@ void main() {
               'accessToken': 'token',
               'picture': 'https://cdn.myanimelist.net/images/userimages/2.jpg',
               'animeStatistics': {
+                'numItemsWatching': 5,
+                'numItemsCompleted': 120,
+                'numItemsOnHold': 8,
+                'numItemsDropped': 3,
+                'numItemsPlanToWatch': 47,
+                'numItems': 183,
                 'numEpisodes': 412,
                 'numDaysWatched': 123.4,
+                'numTimesRewatched': 6,
                 'meanScore': 8.56,
               },
             },
@@ -343,9 +422,16 @@ void main() {
     expect(find.text('Episodes watched'), findsOneWidget);
     expect(find.text('Days spent watching'), findsOneWidget);
     expect(find.text('Mean completed score'), findsOneWidget);
+    expect(find.text('List breakdown'), findsOneWidget);
+    expect(find.text('Watching'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('Plan to watch'), findsOneWidget);
+    expect(find.text('Total entries'), findsOneWidget);
+    expect(find.text('Rewatches'), findsOneWidget);
     expect(find.text('412'), findsOneWidget);
     expect(find.text('123.4'), findsOneWidget);
     expect(find.text('8.56'), findsOneWidget);
+    expect(find.text('183'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Logout'),
       200,
@@ -354,7 +440,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Logout'), findsWidgets);
     expect(find.text('Log out'), findsOneWidget);
-    expect(find.text('A few nice-to-know stats from your MyAnimeList profile.'), findsOneWidget);
+    expect(find.text('A live snapshot of the anime statistics from your MyAnimeList profile.'), findsOneWidget);
   });
 
   testWidgets('My Profile logout journey clears the session',
@@ -364,8 +450,15 @@ void main() {
       accessToken: 'token',
       picture: 'https://cdn.myanimelist.net/images/userimages/2.jpg',
       animeStatistics: {
+        'numItemsWatching': 5,
+        'numItemsCompleted': 120,
+        'numItemsOnHold': 8,
+        'numItemsDropped': 3,
+        'numItemsPlanToWatch': 47,
+        'numItems': 183,
         'numEpisodes': 412,
         'numDaysWatched': 123.4,
+        'numTimesRewatched': 6,
         'meanScore': 8.56,
       },
     );

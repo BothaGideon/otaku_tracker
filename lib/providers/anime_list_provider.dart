@@ -67,9 +67,12 @@ class CombinedData {
 
 final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
   final oauthService = ref.read(oauthProvider);
-  final username = await oauthService.getUsername();
+  final storedUsername = await oauthService.getUsername();
   final accessToken = await oauthService.getAccessToken();
   var picture = await oauthService.getUserPicture();
+  final username = storedUsername == null || storedUsername.isEmpty
+      ? null
+      : storedUsername;
 
   if (accessToken != null && username != null && (picture == null || picture.isEmpty)) {
     final currentUserData = await oauthService.getCurrentUserData(accessToken);
@@ -86,9 +89,10 @@ final userDataProvider = FutureProvider<Map<String, String?>>((ref) async {
 
 final currentUserProfileProvider = FutureProvider<Map<String, Object?>>((ref) async {
   final oauthService = ref.read(oauthProvider);
-  final username = await oauthService.getUsername();
-  final accessToken = await oauthService.getAccessToken();
-  final cachedPicture = await oauthService.getUserPicture();
+  final userData = await ref.watch(userDataProvider.future);
+  final username = userData['username'];
+  final accessToken = userData['accessToken'];
+  final cachedPicture = userData['picture'];
 
   if (accessToken == null || username == null) {
     return {

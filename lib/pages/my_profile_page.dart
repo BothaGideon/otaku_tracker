@@ -156,45 +156,134 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'A few nice-to-know stats from your MyAnimeList profile.',
+                        'A live snapshot of the anime statistics from your MyAnimeList profile.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          SizedBox(
-                            width: 180,
-                            child: _ProfileJourneyStatCard(
-                              label: 'Episodes watched',
-                              value: _formatEpisodes(
-                                animeStatistics?['numEpisodes'],
-                              ),
-                              icon: Icons.live_tv_rounded,
+                      const SizedBox(height: 20),
+                      if (animeStatistics == null)
+                        _ProfileStatsUnavailableCard()
+                      else
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                SizedBox(
+                                  width: 180,
+                                  child: _ProfileJourneyStatCard(
+                                    label: 'Episodes watched',
+                                    value: _formatEpisodes(
+                                      animeStatistics['numEpisodes'],
+                                    ),
+                                    icon: Icons.live_tv_rounded,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 180,
+                                  child: _ProfileJourneyStatCard(
+                                    label: 'Days spent watching',
+                                    value: _formatDaysWatched(
+                                      animeStatistics['numDaysWatched'],
+                                    ),
+                                    icon: Icons.schedule_rounded,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 180,
+                                  child: _ProfileJourneyStatCard(
+                                    label: 'Mean completed score',
+                                    value: _formatMeanScore(
+                                      animeStatistics['meanScore'],
+                                    ),
+                                    icon: Icons.star_rounded,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          SizedBox(
-                            width: 180,
-                            child: _ProfileJourneyStatCard(
-                              label: 'Days spent watching',
-                              value: _formatDaysWatched(
-                                animeStatistics?['numDaysWatched'],
-                              ),
-                              icon: Icons.schedule_rounded,
+                            const SizedBox(height: 24),
+                            Text(
+                              'List breakdown',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                          ),
-                          SizedBox(
-                            width: 180,
-                            child: _ProfileJourneyStatCard(
-                              label: 'Mean completed score',
-                              value: _formatMeanScore(
-                                animeStatistics?['meanScore'],
-                              ),
-                              icon: Icons.star_rounded,
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                _ProfileListBreakdownTile(
+                                  label: 'Watching',
+                                  value: _formatCount(
+                                    animeStatistics['numItemsWatching'],
+                                  ),
+                                  icon: Icons.play_circle_fill_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'Completed',
+                                  value: _formatCount(
+                                    animeStatistics['numItemsCompleted'],
+                                  ),
+                                  icon: Icons.check_circle_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'On hold',
+                                  value: _formatCount(
+                                    animeStatistics['numItemsOnHold'],
+                                  ),
+                                  icon: Icons.pause_circle_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'Dropped',
+                                  value: _formatCount(
+                                    animeStatistics['numItemsDropped'],
+                                  ),
+                                  icon: Icons.cancel_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'Plan to watch',
+                                  value: _formatCount(
+                                    animeStatistics['numItemsPlanToWatch'],
+                                  ),
+                                  icon: Icons.bookmark_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'Total entries',
+                                  value: _formatCount(
+                                    animeStatistics['numItems'],
+                                  ),
+                                  icon: Icons.collections_bookmark_rounded,
+                                ),
+                                _ProfileListBreakdownTile(
+                                  label: 'Rewatches',
+                                  value: _formatCount(
+                                    animeStatistics['numTimesRewatched'],
+                                  ),
+                                  icon: Icons.replay_rounded,
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Connected account',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Otaku Tracker pulls these details directly from the MyAnimeList API whenever your session is active.',
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
@@ -309,6 +398,84 @@ class _ProfileJourneyStatCard extends StatelessWidget {
   }
 }
 
+class _ProfileStatsUnavailableCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'We could not load your anime statistics from MyAnimeList right now. Pull to retry or reopen your profile after your session finishes refreshing.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileListBreakdownTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _ProfileListBreakdownTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 150),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: colorScheme.primary),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 String _formatEpisodes(num? episodes) {
   final value = episodes?.toInt();
   return value == null ? 'N/A' : '$value';
@@ -328,4 +495,9 @@ String _formatMeanScore(num? meanScore) {
   }
 
   return meanScore.toStringAsFixed(2);
+}
+
+String _formatCount(num? value) {
+  final count = value?.toInt();
+  return count == null ? 'N/A' : '$count';
 }
