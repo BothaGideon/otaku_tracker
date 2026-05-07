@@ -75,7 +75,7 @@ class AnimeDetailsHeroSection extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: maxHeroWidth),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Padding(
@@ -196,14 +196,6 @@ class AnimeDetailsHeroContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'OTAKU TRACKER',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Colors.amber,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.4,
-              ),
-        ),
         const SizedBox(height: 8),
         Text(
           title,
@@ -645,21 +637,24 @@ class AnimeDetailsRelationGroup extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.start,
-          runAlignment: WrapAlignment.start,
-          children: relation.entry
-              .map(
-                (entry) => ActionChip(
-                  label: Text(entry.name),
-                  onPressed: entry.type.toLowerCase() == 'anime'
-                      ? () => openAnimeDetailsPage(context, entry.malId)
-                      : null,
-                ),
-              )
-              .toList(),
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.start,
+            runAlignment: WrapAlignment.start,
+            children: relation.entry
+                .map(
+                  (entry) => ActionChip(
+                    label: Text(entry.name),
+                    onPressed: entry.type.toLowerCase() == 'anime'
+                        ? () => openAnimeDetailsPage(context, entry.malId)
+                        : null,
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ],
     );

@@ -61,6 +61,23 @@ This file is for coding agents and LLM assistants working in this repository.
 - After each finished prompt that changes code, create a proper git commit before ending the task.
 - Commit messages should be specific and describe the completed change clearly.
 - When a prompt includes multiple related changes, split them into detailed, reviewable commits grouped by concern so they are easy to track and revert independently.
+- Don't overwrite or revert commits that are not related to the current change, even if they contain issues. Focus on the changes you made and ensure they are correct and well-documented in the commit message.
+- Example commit message for a change that adds a new widget:
+  ```
+  Add AnimeCard widget for displaying anime details in a card format
+
+  - Created AnimeCard widget in lib/widgets/anime_card.dart
+  - Updated landing_page.dart to use AnimeCard for anime listings
+  - Styled AnimeCard to match existing design language
+  ```
+- Example commit message for a change that updates a provider:
+  ```
+  Update AnimeProvider to include new method for fetching anime details
+
+  - Added fetchAnimeDetails method to AnimeProvider in lib/providers/anime_provider.dart
+  - Updated existing methods to use fetchAnimeDetails where appropriate
+  - Ensured that the new method handles errors gracefully and returns expected data format
+  ```
 
 ## Practical Decision Rules
 
