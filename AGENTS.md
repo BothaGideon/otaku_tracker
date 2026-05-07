@@ -60,6 +60,7 @@ This file is for coding agents and LLM assistants working in this repository.
 
 - After each finished prompt that changes code, create a proper git commit before ending the task.
 - Commit messages should be specific and describe the completed change clearly.
+- When a prompt includes multiple related changes, split them into detailed, reviewable commits grouped by concern so they are easy to track and revert independently.
 
 ## Practical Decision Rules
 
