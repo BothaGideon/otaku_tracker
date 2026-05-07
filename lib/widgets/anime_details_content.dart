@@ -538,7 +538,7 @@ class AnimeDetailsRecommendationsSection extends StatelessWidget {
       child: visibleRecommendations.isEmpty
           ? const Text('No recommendations available.')
           : SizedBox(
-              height: 240,
+              height: 320,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: visibleRecommendations.length,
