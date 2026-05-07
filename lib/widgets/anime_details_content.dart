@@ -159,18 +159,6 @@ class AnimeDetailsHeroContent extends StatelessWidget {
     final titleColor = Colors.white;
     final subtitleColor = Colors.white70;
     final metadata = <Widget>[
-      AnimeDetailsInfoBadge(
-        icon: Symbols.star_rounded,
-        label: anime.score?.toStringAsFixed(2) ?? 'N/A',
-      ),
-      AnimeDetailsInfoBadge(
-        icon: Symbols.leaderboard_rounded,
-        label: anime.rank != null ? '#${anime.rank}' : 'Unranked',
-      ),
-      AnimeDetailsInfoBadge(
-        icon: Symbols.thumb_up_rounded,
-        label: anime.popularity != null ? '#${anime.popularity}' : 'N/A',
-      ),
       if (anime.type != null)
         AnimeDetailsInfoBadge(
           icon: Symbols.movie_rounded,
@@ -306,7 +294,7 @@ class AnimeDetailsScorePanel extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
+          horizontal: 14.0,
           vertical: 14.0,
         ),
         child: Wrap(
@@ -358,8 +346,7 @@ class AnimeDetailsHeroStat extends StatelessWidget {
     return SizedBox(
       width: 132,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(icon, color: Colors.amber, size: 18),
           const SizedBox(width: 8),
