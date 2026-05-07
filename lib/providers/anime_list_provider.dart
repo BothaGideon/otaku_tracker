@@ -136,6 +136,29 @@ final animeSearchProvider =
   return results.data;
 });
 
+enum AnimeSearchQuickFilter {
+  topAnime,
+  topRated,
+  recentlyAdded,
+}
+
+final animeSearchQuickFilterProvider =
+    FutureProvider.autoDispose.family<List<AnimeData>, AnimeSearchQuickFilter>((
+      ref,
+      filter,
+    ) async {
+      final service = ref.read(animeListServiceProvider);
+
+      switch (filter) {
+        case AnimeSearchQuickFilter.topAnime:
+          return (await service.getTopAnime()).data;
+        case AnimeSearchQuickFilter.topRated:
+          return (await service.getTopRatedAnime()).data;
+        case AnimeSearchQuickFilter.recentlyAdded:
+          return (await service.getRecentlyAddedAnime()).data;
+      }
+    });
+
 class AnimeDetailsData {
   final Anime anime;
   final List<Recommendation> recommendations;

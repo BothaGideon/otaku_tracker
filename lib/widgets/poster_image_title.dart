@@ -98,62 +98,94 @@ class PosterImageTitle extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Row(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.only(right: 2.0),
-                                    child: Icon(
-                                        size: 16.0, Symbols.star_rounded),
-                                  ),
-                                  Text(
-                                    scoreToUse != null && scoreToUse > 0
-                                        ? scoreToUse is double
-                                            ? scoreToUse.toStringAsFixed(1)
-                                            : scoreToUse.toString()
-                                        : 'N/A',
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14.0),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                              if (userStatus != null && userStatus!.isNotEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 4.0),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(userStatus!),
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: Text(
-                                    _formatStatusText(userStatus!),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10.0,
-                                      fontWeight: FontWeight.w600,
+                              Flexible(
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.only(right: 2.0),
+                                          child: Icon(
+                                              size: 16.0,
+                                              Symbols.star_rounded),
+                                        ),
+                                        Text(
+                                          scoreToUse != null && scoreToUse > 0
+                                              ? scoreToUse is double
+                                                  ? scoreToUse.toStringAsFixed(
+                                                      1)
+                                                  : scoreToUse.toString()
+                                              : 'N/A',
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14.0),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                )
-                              else if (showAuxiliaryStatWhenNoStatus)
-                                Row(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 3.0),
-                                      child: Icon(
-                                          size: 16.0,
-                                          auxiliaryStatIcon),
-                                    ),
-                                    Text(
-                                      auxiliaryStatToUse?.toString() ?? 'N/A',
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 14.0),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
                                 ),
+                              ),
+                              const SizedBox(width: 8.0),
+                              Flexible(
+                                child: Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerRight,
+                                    child: userStatus != null &&
+                                            userStatus!.isNotEmpty
+                                        ? Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0, vertical: 4.0),
+                                            decoration: BoxDecoration(
+                                              color: _getStatusColor(
+                                                  userStatus!),
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
+                                            ),
+                                            child: Text(
+                                              _formatStatusText(userStatus!),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10.0,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          )
+                                        : showAuxiliaryStatWhenNoStatus
+                                            ? Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 3.0),
+                                                    child: Icon(
+                                                        size: 16.0,
+                                                        auxiliaryStatIcon),
+                                                  ),
+                                                  Text(
+                                                    auxiliaryStatToUse
+                                                            ?.toString() ??
+                                                        'N/A',
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14.0),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              )
+                                            : const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),

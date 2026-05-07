@@ -52,29 +52,85 @@ UserAnimeData buildUserAnimeData({
   );
 }
 
+AnimeData buildSearchAnimeData({
+  required int id,
+  required String title,
+  required double mean,
+  required int numScoringUsers,
+}) {
+  return AnimeData(
+    node: Node(
+      id: id,
+      title: title,
+      mainPicture: MainPicture(
+        medium: 'https://cdn.example.com/anime/$id-medium.jpg',
+        large: 'https://cdn.example.com/anime/$id-large.jpg',
+      ),
+      mean: mean,
+      numScoringUsers: numScoringUsers,
+    ),
+  );
+}
+
 class FakeAnimeListService extends AnimeListService {
   @override
   Future<AnimeDTO> searchAnime(String query, {int limit = 30}) async {
     if (query.toLowerCase().contains('steins')) {
       return AnimeDTO(
         data: [
-          AnimeData(
-            node: Node(
-              id: 10,
-              title: 'Steins;Gate',
-              mainPicture: MainPicture(
-                medium: 'https://cdn.example.com/anime/10-medium.jpg',
-                large: 'https://cdn.example.com/anime/10-large.jpg',
-              ),
-              mean: 9.1,
-              numScoringUsers: 987654,
-            ),
+          buildSearchAnimeData(
+            id: 10,
+            title: 'Steins;Gate',
+            mean: 9.1,
+            numScoringUsers: 987654,
           ),
         ],
       );
     }
 
     return AnimeDTO(data: []);
+  }
+
+  @override
+  Future<AnimeDTO> getTopAnime({int limit = 30}) async {
+    return AnimeDTO(
+      data: [
+        buildSearchAnimeData(
+          id: 1,
+          title: 'Attack on Titan',
+          mean: 8.8,
+          numScoringUsers: 1456789,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<AnimeDTO> getTopRatedAnime({int limit = 30}) async {
+    return AnimeDTO(
+      data: [
+        buildSearchAnimeData(
+          id: 5114,
+          title: 'Fullmetal Alchemist: Brotherhood',
+          mean: 9.1,
+          numScoringUsers: 2100456,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<AnimeDTO> getRecentlyAddedAnime({int limit = 30}) async {
+    return AnimeDTO(
+      data: [
+        buildSearchAnimeData(
+          id: 99999,
+          title: 'New Saga',
+          mean: 7.4,
+          numScoringUsers: 12450,
+        ),
+      ],
+    );
   }
 }
 
@@ -575,6 +631,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Search for an anime title'), findsOneWidget);
+    expect(find.text('Top anime'), findsOneWidget);
+    expect(find.text('Top rated'), findsOneWidget);
+    expect(find.text('Recently added'), findsOneWidget);
+    expect(find.text('Attack on Titan'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'steins');
     await tester.pumpAndSettle();
@@ -582,6 +642,53 @@ void main() {
     expect(find.text('Steins;Gate'), findsOneWidget);
     expect(find.text('9.1'), findsOneWidget);
     expect(find.text('987654'), findsOneWidget);
+  });
+
+  testWidgets('search quick filters switch between curated MAL result sets',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: const LandingPage(),
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          animeListServiceProvider.overrideWith((ref) => FakeAnimeListService()),
+          combinedAnimeListProvider.overrideWith(
+            (ref) async => CombinedData(
+              currentSeasonAnimeList: const [],
+              previousSeasonAnimeList: const [],
+              upcomingSeasonAnimeList: const [],
+              topUpcoming: const [],
+              topAiring: const [],
+              mostPopular: const [],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Search anime'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attack on Titan'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Top rated'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fullmetal Alchemist: Brotherhood'), findsOneWidget);
+    expect(find.text('Attack on Titan'), findsNothing);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Recently added'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('New Saga'), findsOneWidget);
+    expect(find.text('Fullmetal Alchemist: Brotherhood'), findsNothing);
   });
 
   testWidgets('search results do not overflow on compact widths',
