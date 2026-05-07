@@ -21,7 +21,7 @@ class OtakuTrackerAppBar extends ConsumerWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userDataAsync = ref.watch(userDataProvider);
-    final userData = userDataAsync.valueOrNull;
+    final userData = userDataAsync.value;
     final isLoggedIn = userData?['username'] != null;
     final picture = userData?['picture'];
 

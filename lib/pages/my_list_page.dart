@@ -163,6 +163,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                             (status) => ChoiceChip(
                               label: Text(status.label),
                               selected: selectedStatus == status,
+                              showCheckmark: false,
                               onSelected: (_) {
                                 ref.read(myListFilterProvider.notifier).state =
                                     status;
@@ -175,6 +176,8 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                 ),
                 Expanded(
                   child: userAnimeAsync.when(
+                    skipLoadingOnRefresh: true,
+                    skipLoadingOnReload: true,
                     data: (userAnimeList) {
                       final filteredList =
                           selectedStatus == MyListStatusFilter.all
@@ -211,6 +214,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                               : node.mean;
 
                           return InkWell(
+                            key: ValueKey(node.id),
                             borderRadius: BorderRadius.circular(15),
                             onTap: () => openAnimeDetailsPage(context, node.id),
                             child: PosterImageTitle(

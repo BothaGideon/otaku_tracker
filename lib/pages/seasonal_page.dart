@@ -37,7 +37,7 @@ class SeasonalPage extends ConsumerWidget {
             onSelectionChanged: (Set<SeasonSelectionFilter> newSelection) {
               ref
                   .read(seasonSelectionProvider.notifier)
-                  .updateSelection(newSelection, ref);
+                  .updateSelection(newSelection);
             },
           ),
           const SizedBox(

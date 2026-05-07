@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../constants/anime_seasons_helper.dart';
 
@@ -6,7 +6,7 @@ class SeasonSelectionNotifier
     extends StateNotifier<Set<SeasonSelectionFilter>> {
   SeasonSelectionNotifier() : super({SeasonSelectionFilter.current});
 
-  void updateSelection(Set<SeasonSelectionFilter> newSelection, WidgetRef ref) {
+  void updateSelection(Set<SeasonSelectionFilter> newSelection) {
     state = newSelection;
   }
 }

@@ -17,12 +17,12 @@ import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
 
 Widget createTestApp({
-  required List<Override> overrides,
+  required List overrides,
   Widget child = const MyListPage(),
   MediaQueryData mediaQueryData = const MediaQueryData(size: Size(800, 600)),
 }) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: overrides.cast(),
     child: Directionality(
       textDirection: TextDirection.ltr,
       child: MediaQuery(
@@ -411,6 +411,10 @@ void main() {
     expect(find.text('Cowboy Bebop'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Completed'));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
     await tester.pumpAndSettle();
 
     expect(find.text('Cowboy Bebop'), findsOneWidget);
