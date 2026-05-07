@@ -515,6 +515,7 @@ class AnimeDetailsRelationsSection extends StatelessWidget {
       child: visibleRelations.isEmpty
           ? const Text('No related media listed.')
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: visibleRelations
                   .map(
                     (relation) => Padding(
@@ -647,6 +648,8 @@ class AnimeDetailsRelationGroup extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          alignment: WrapAlignment.start,
+          runAlignment: WrapAlignment.start,
           children: relation.entry
               .map(
                 (entry) => ActionChip(
