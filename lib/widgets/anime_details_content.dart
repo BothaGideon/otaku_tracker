@@ -538,7 +538,7 @@ class AnimeDetailsRecommendationsSection extends StatelessWidget {
       child: visibleRecommendations.isEmpty
           ? const Text('No recommendations available.')
           : SizedBox(
-              height: 320,
+              height: 240,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: visibleRecommendations.length,
@@ -599,7 +599,7 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
                       child: const Icon(Icons.image_not_supported),
                     ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Expanded(
               child: Text(
                 recommendation.entry.title,
@@ -607,7 +607,7 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               '${recommendation.votes} votes',
               style: Theme.of(context).textTheme.bodySmall,
