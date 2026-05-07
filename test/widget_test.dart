@@ -19,13 +19,14 @@ import 'package:otaku_tracker/widgets/user_avatar.dart';
 Widget createTestApp({
   required List<Override> overrides,
   Widget child = const MyListPage(),
+  MediaQueryData mediaQueryData = const MediaQueryData(size: Size(800, 600)),
 }) {
   return ProviderScope(
     overrides: overrides,
     child: Directionality(
       textDirection: TextDirection.ltr,
       child: MediaQuery(
-        data: const MediaQueryData(),
+        data: mediaQueryData,
         child: MaterialApp(home: child),
       ),
     ),
@@ -286,15 +287,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Your anime journey'), findsOneWidget);
-    expect(find.text('Episodes watched'), findsOneWidget);
-    expect(find.text('List breakdown'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
-    expect(find.text('Plan to watch'), findsOneWidget);
-    expect(find.text('Rewatches'), findsOneWidget);
-    expect(find.text('412'), findsOneWidget);
-    expect(find.text('123.4'), findsOneWidget);
-    expect(find.text('8.56'), findsOneWidget);
-    expect(find.text('183'), findsOneWidget);
+    expect(find.text('Episodes watched', skipOffstage: false), findsOneWidget);
+    expect(find.text('List breakdown', skipOffstage: false), findsOneWidget);
+    expect(find.text('Completed', skipOffstage: false), findsWidgets);
+    expect(find.text('Plan to watch', skipOffstage: false), findsWidgets);
+    expect(find.text('Rewatches', skipOffstage: false), findsOneWidget);
+    expect(find.text('412', skipOffstage: false), findsOneWidget);
+    expect(find.text('123.4', skipOffstage: false), findsOneWidget);
+    expect(find.text('8.56', skipOffstage: false), findsOneWidget);
+    expect(find.text('183', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('logged in My List shows profile action and filter chips',
@@ -419,19 +420,19 @@ void main() {
     expect(find.text('My Profile'), findsOneWidget);
     expect(find.text('lumen'), findsOneWidget);
     expect(find.text('Your anime journey'), findsOneWidget);
-    expect(find.text('Episodes watched'), findsOneWidget);
-    expect(find.text('Days spent watching'), findsOneWidget);
-    expect(find.text('Mean completed score'), findsOneWidget);
-    expect(find.text('List breakdown'), findsOneWidget);
-    expect(find.text('Watching'), findsOneWidget);
-    expect(find.text('Completed'), findsOneWidget);
-    expect(find.text('Plan to watch'), findsOneWidget);
-    expect(find.text('Total entries'), findsOneWidget);
-    expect(find.text('Rewatches'), findsOneWidget);
-    expect(find.text('412'), findsOneWidget);
-    expect(find.text('123.4'), findsOneWidget);
-    expect(find.text('8.56'), findsOneWidget);
-    expect(find.text('183'), findsOneWidget);
+    expect(find.text('Episodes watched', skipOffstage: false), findsOneWidget);
+    expect(find.text('Days spent watching', skipOffstage: false), findsOneWidget);
+    expect(find.text('Mean completed score', skipOffstage: false), findsOneWidget);
+    expect(find.text('List breakdown', skipOffstage: false), findsOneWidget);
+    expect(find.text('Watching', skipOffstage: false), findsOneWidget);
+    expect(find.text('Completed', skipOffstage: false), findsWidgets);
+    expect(find.text('Plan to watch', skipOffstage: false), findsOneWidget);
+    expect(find.text('Total entries', skipOffstage: false), findsOneWidget);
+    expect(find.text('Rewatches', skipOffstage: false), findsOneWidget);
+    expect(find.text('412', skipOffstage: false), findsOneWidget);
+    expect(find.text('123.4', skipOffstage: false), findsOneWidget);
+    expect(find.text('8.56', skipOffstage: false), findsOneWidget);
+    expect(find.text('183', skipOffstage: false), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Logout'),
       200,
@@ -570,6 +571,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Steins;Gate'), findsOneWidget);
+  });
+
+  testWidgets('search results do not overflow on compact widths',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: const LandingPage(),
+        mediaQueryData: const MediaQueryData(size: Size(320, 640)),
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          animeListServiceProvider.overrideWith((ref) => FakeAnimeListService()),
+          combinedAnimeListProvider.overrideWith(
+            (ref) async => CombinedData(
+              currentSeasonAnimeList: const [],
+              previousSeasonAnimeList: const [],
+              upcomingSeasonAnimeList: const [],
+              topUpcoming: const [],
+              topAiring: const [],
+              mostPopular: const [],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Search anime'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'steins');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Steins;Gate'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('universal search shows an empty state when nothing matches',

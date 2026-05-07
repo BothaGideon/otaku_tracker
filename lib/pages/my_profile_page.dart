@@ -171,7 +171,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'episodes watched',
+                                    label: 'Episodes watched',
                                     value: _formatEpisodes(
                                       animeStatistics['numEpisodes'],
                                     ),
@@ -181,7 +181,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'days spent watching',
+                                    label: 'Days spent watching',
                                     value: _formatDaysWatched(
                                       animeStatistics['numDaysWatched'],
                                     ),
@@ -191,7 +191,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: _ProfileJourneyStatCard(
-                                    label: 'average completed score',
+                                    label: 'Mean completed score',
                                     value: _formatMeanScore(
                                       animeStatistics['meanScore'],
                                     ),

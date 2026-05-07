@@ -80,9 +80,9 @@ class _SearchResults extends ConsumerWidget {
           itemCount: results.length,
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 200.0,
+            mainAxisExtent: 320.0,
             mainAxisSpacing: 10.0,
             crossAxisSpacing: 10.0,
-            childAspectRatio: 0.6,
           ),
           itemBuilder: (context, index) {
             final anime = results[index].node;
