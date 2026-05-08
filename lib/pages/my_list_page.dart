@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
+import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/my_list_anime_tile.dart';
@@ -24,6 +25,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
     final oauthService = ref.read(oauthProvider);
     final userDataAsync = ref.watch(userDataProvider);
     final selectedStatus = ref.watch(myListFilterProvider);
+    final selectedViewMode = ref.watch(myListViewModeProvider);
 
     return userDataAsync.when(
       data: (userData) {
@@ -152,25 +154,65 @@ class _MyListPageState extends ConsumerState<MyListPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: MyListStatusFilter.values
-                          .map(
-                            (status) => ChoiceChip(
-                              label: Text(status.label),
-                              selected: selectedStatus == status,
-                              showCheckmark: false,
-                              onSelected: (_) {
-                                ref.read(myListFilterProvider.notifier).state =
-                                    status;
-                              },
-                            ),
-                          )
-                        .toList(),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final controls = [
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: MyListStatusFilter.values
+                              .map(
+                                (status) => ChoiceChip(
+                                  label: Text(status.label),
+                                  selected: selectedStatus == status,
+                                  showCheckmark: false,
+                                  onSelected: (_) {
+                                    ref.read(myListFilterProvider.notifier).state =
+                                        status;
+                                  },
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        SegmentedButton<MyListViewMode>(
+                          segments: MyListViewMode.values
+                              .map(
+                                (viewMode) => ButtonSegment<MyListViewMode>(
+                                  value: viewMode,
+                                  label: Text(viewMode.label),
+                                ),
+                              )
+                              .toList(),
+                          selected: {selectedViewMode},
+                          onSelectionChanged: (selection) {
+                            if (selection.isNotEmpty) {
+                              ref.read(myListViewModeProvider.notifier).state =
+                                  selection.first;
+                            }
+                          },
+                        ),
+                      ];
+
+                      if (constraints.maxWidth < 720) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            controls.first,
+                            const SizedBox(height: 12),
+                            controls.last,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: controls.first),
+                          const SizedBox(width: 12),
+                          controls.last,
+                        ],
+                      );
+                    },
                   ),
                 ),
                 Expanded(
@@ -196,26 +238,29 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                         );
                       }
 
-                      return GridView.builder(
-                        itemCount: filteredList.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 200.0,
-                          mainAxisSpacing: 10.0,
-                          crossAxisSpacing: 10.0,
-                          childAspectRatio: 0.6,
-                        ),
-                        itemBuilder: (context, index) {
-                          final userAnimeData = filteredList[index];
+                      if (selectedViewMode == MyListViewMode.detail) {
+                        return MyListDetailView(items: filteredList);
+                      }
 
-                          return KeyedSubtree(
-                            key: ValueKey(userAnimeData.node.id),
-                            child: MyListAnimeTile(
-                              userAnimeData: userAnimeData,
-                            ),
-                          );
-                        },
-                      );
+                      return GridView.builder(
+                          itemCount: filteredList.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200.0,
+                            mainAxisSpacing: 10.0,
+                            crossAxisSpacing: 10.0,
+                            childAspectRatio: 0.6,
+                          ),
+                          itemBuilder: (context, index) {
+                            final userAnimeData = filteredList[index];
+
+                            return KeyedSubtree(
+                              key: ValueKey(userAnimeData.node.id),
+                              child: MyListAnimeTile(
+                                userAnimeData: userAnimeData,
+                              ),
+                            );
+                          });
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),

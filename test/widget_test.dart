@@ -13,6 +13,7 @@ import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
+import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
 
@@ -471,6 +472,8 @@ void main() {
     expect(find.byType(ChoiceChip), findsNWidgets(MyListStatusFilter.values.length));
     expect(find.text('All'), findsOneWidget);
     expect(find.text('Plan to watch'), findsOneWidget);
+    expect(find.text('Poster view'), findsOneWidget);
+    expect(find.text('Detail view'), findsOneWidget);
   });
 
   testWidgets('tapping a filter chip updates the visible list and empty state',
@@ -538,6 +541,44 @@ void main() {
       ),
     );
     expect(monsterPoster.userScore, 8.7);
+  });
+
+  testWidgets('My List switches between poster and detail views',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MyListDetailView), findsNothing);
+    expect(find.text('3 / 24 watched'), findsOneWidget);
+
+    await tester.tap(find.text('Detail view'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MyListDetailView), findsOneWidget);
+    expect(find.text('Title'), findsOneWidget);
+    expect(find.text('Progress'), findsWidgets);
+    expect(find.text('3 / 24'), findsOneWidget);
+    expect(find.text('9 / 10'), findsOneWidget);
+    expect(find.text('3 / 24 watched'), findsNothing);
+
+    await tester.tap(find.text('Poster view'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MyListDetailView), findsNothing);
+    expect(find.text('3 / 24 watched'), findsOneWidget);
   });
 
   testWidgets('My List quick edit updates watched progress from a grid tile',

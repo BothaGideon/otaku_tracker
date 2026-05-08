@@ -14,5 +14,17 @@ enum MyListStatusFilter {
   final String label;
 }
 
+enum MyListViewMode {
+  poster('Poster view'),
+  detail('Detail view');
+
+  const MyListViewMode(this.label);
+
+  final String label;
+}
+
 final myListFilterProvider =
     StateProvider<MyListStatusFilter>((ref) => MyListStatusFilter.all);
+
+final myListViewModeProvider =
+    StateProvider<MyListViewMode>((ref) => MyListViewMode.poster);
