@@ -46,7 +46,11 @@ class DeepLinkService {
     log('Deep link received: $uri');
 
     // Check if this is an OAuth callback
-    if (uri.scheme == 'otaku.tracker' && uri.queryParameters.containsKey('code')) {
+    final isOauthCallback = uri.scheme == 'otaku.tracker' &&
+        (uri.host == 'auth' || uri.path == '/auth') &&
+        uri.queryParameters.containsKey('code');
+
+    if (isOauthCallback) {
       log('OAuth callback received with code: ${uri.queryParameters['code']}');
       // The OAuth service will handle this through FlutterWebAuth2
       return;
@@ -56,7 +60,7 @@ class DeepLinkService {
     final code = uri.queryParameters['code'];
     log('Deep link code: $code');
 
-    if (uri.path == '/auth') {
+    if (uri.host == 'auth' || uri.path == '/auth') {
       log('Authentication deep link received');
     }
 

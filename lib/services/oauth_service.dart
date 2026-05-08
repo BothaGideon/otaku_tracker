@@ -11,12 +11,13 @@ const tokenUri = 'https://myanimelist.net/v1/oauth2/token';
 const authorizeUri = 'https://myanimelist.net/v1/oauth2/authorize';
 const apiBaseUrl = 'https://api.myanimelist.net/v2';
 const oauthCallbackUrlScheme = 'otaku.tracker';
-const oauthRedirectUri = '$oauthCallbackUrlScheme:/';
+const oauthRedirectUri = '$oauthCallbackUrlScheme://auth';
 
 class OauthService {
   Future<String?> login() async {
     final verifier = _generateCodeVerifier();
-    final loginUrl = _generateLoginUrl(verifier);
+    final state = _generateState();
+    final loginUrl = _generateLoginUrl(verifier, state);
 
     try {
       dev.log('Starting OAuth flow with URL: $loginUrl');
@@ -26,10 +27,16 @@ class OauthService {
 
       final queryParams = Uri.parse(uri).queryParameters;
       final code = queryParams['code'];
+      final returnedState = queryParams['state'];
 
       if (code == null) {
         dev.log('No authorization code in callback URI');
         return null;
+      }
+
+      if (returnedState != state) {
+        dev.log('OAuth state mismatch. Expected $state, got $returnedState');
+        return 'Login failed: invalid OAuth state';
       }
 
       dev.log('Authorization code received: $code');
@@ -70,8 +77,23 @@ class OauthService {
     return base64UrlEncode(values).substring(0, 128);
   }
 
-  String _generateLoginUrl(String verifier) {
-    return '$authorizeUri?response_type=code&client_id=$clientId&code_challenge=$verifier';
+  String _generateState() {
+    final random = Random.secure();
+    final values = List<int>.generate(32, (i) => random.nextInt(256));
+    return base64UrlEncode(values).replaceAll('=', '');
+  }
+
+  String _generateLoginUrl(String verifier, String state) {
+    return Uri.parse(authorizeUri).replace(
+      queryParameters: {
+        'response_type': 'code',
+        'client_id': clientId,
+        'state': state,
+        'redirect_uri': oauthRedirectUri,
+        'code_challenge': verifier,
+        'code_challenge_method': 'plain',
+      },
+    ).toString();
   }
 
   Future<Map<String, dynamic>> _generateTokens(
@@ -80,6 +102,7 @@ class OauthService {
       'client_id': clientId,
       'grant_type': 'authorization_code',
       'code': code,
+      'redirect_uri': oauthRedirectUri,
       'code_verifier': verifier,
     };
     final response = await http.post(Uri.parse(tokenUri), body: params);
