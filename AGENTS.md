@@ -29,13 +29,16 @@ This file is for coding agents and LLM assistants working in this repository.
    - rendering content
    - owning UI styling
    - presenting already-available data
+   - avoiding fallback/formatting/business-rule checks when those can be prepared in providers or services first
 
-3. Prefer existing project patterns before adding new ones:
+3. When a widget needs multiple null/empty/formatting checks to present data, move those checks into the service/provider layer and pass the widget a prepared view model or presentation object.
+
+4. Prefer existing project patterns before adding new ones:
    - use Riverpod providers already in the repo
    - use shared widgets when a pattern already exists
    - use `openAnimeDetailsPage(...)` for anime-detail navigation
 
-4. Keep changes scoped:
+5. Keep changes scoped:
    - do not refactor unrelated files
    - do not add new dependencies unless necessary
    - prefer small, direct widget extraction over new abstraction layers

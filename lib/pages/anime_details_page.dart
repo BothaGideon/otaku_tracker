@@ -15,7 +15,7 @@ class AnimeDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final animeDetailsAsync = ref.watch(animeDetailsProvider(animeId));
+    final animeDetailsAsync = ref.watch(animeDetailsViewProvider(animeId));
 
     return Scaffold(
       appBar: const OtakuTrackerAppBar(title: Text('Anime Details')),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
+import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 
 final animeListServiceProvider = Provider<AnimeListService>((ref) {
@@ -245,3 +246,21 @@ final animeDetailsProvider =
     recommendations: recommendations.toList(),
   );
 });
+
+final animeDetailsViewServiceProvider = Provider(
+  (ref) => AnimeDetailsViewService(),
+);
+
+final animeDetailsViewProvider =
+    FutureProvider.autoDispose.family<AnimeDetailsViewData, int>((
+      ref,
+      animeId,
+    ) async {
+      final details = await ref.watch(animeDetailsProvider(animeId).future);
+      final viewService = ref.read(animeDetailsViewServiceProvider);
+
+      return viewService.buildViewData(
+        anime: details.anime,
+        recommendations: details.recommendations,
+      );
+    });

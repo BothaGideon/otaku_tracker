@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jikan_api/jikan_api.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
+import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 
 class AnimeDetailsContent extends StatelessWidget {
-  final AnimeDetailsData details;
+  final AnimeDetailsViewData details;
 
   const AnimeDetailsContent({
     super.key,
@@ -17,40 +17,32 @@ class AnimeDetailsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final anime = details.anime;
-    final title = anime.titleEnglish ?? anime.title;
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AnimeDetailsHeroSection(
-            anime: anime,
-            title: title,
-          ),
+          AnimeDetailsHeroSection(details: details),
           const SizedBox(height: 24),
           AnimeListManagementSection(
-            animeId: anime.malId,
-            totalEpisodes: anime.episodes,
+            animeId: details.animeId,
+            totalEpisodes: details.totalEpisodes,
           ),
           const SizedBox(height: 16),
           AnimeDetailsTextSection(
             title: 'Synopsis',
-            content: anime.synopsis?.trim().isNotEmpty == true
-                ? anime.synopsis!.trim()
-                : 'No synopsis available for this title yet.',
+            content: details.synopsis,
           ),
-          if (anime.background?.trim().isNotEmpty == true) ...[
+          if (details.background != null) ...[
             const SizedBox(height: 16),
             AnimeDetailsTextSection(
               title: 'Background',
-              content: anime.background!.trim(),
+              content: details.background!,
               isBodyLarge: false,
             ),
           ],
           const SizedBox(height: 16),
-          AnimeDetailsRelationsSection(relations: anime.relations),
+          AnimeDetailsRelationsSection(relations: details.relatedMedia),
           const SizedBox(height: 16),
           AnimeDetailsRecommendationsSection(
             recommendations: details.recommendations,
@@ -62,13 +54,11 @@ class AnimeDetailsContent extends StatelessWidget {
 }
 
 class AnimeDetailsHeroSection extends StatelessWidget {
-  final Anime anime;
-  final String title;
+  final AnimeDetailsViewData details;
 
   const AnimeDetailsHeroSection({
     super.key,
-    required this.anime,
-    required this.title,
+    required this.details,
   });
 
   @override
@@ -102,14 +92,13 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                           SizedBox(
                             width: 220,
                             child: AnimeDetailsHeroPoster(
-                              imageUrl: anime.imageUrl,
+                              imageUrl: details.imageUrl,
                             ),
                           ),
                           const SizedBox(width: 24),
                           Expanded(
                             child: AnimeDetailsHeroContent(
-                              anime: anime,
-                              title: title,
+                              details: details,
                             ),
                           ),
                         ],
@@ -122,14 +111,11 @@ class AnimeDetailsHeroSection extends StatelessWidget {
                         SizedBox(
                           width: 220,
                           child: AnimeDetailsHeroPoster(
-                            imageUrl: anime.imageUrl,
+                            imageUrl: details.imageUrl,
                           ),
                         ),
                         const SizedBox(height: 20),
-                        AnimeDetailsHeroContent(
-                          anime: anime,
-                          title: title,
-                        ),
+                        AnimeDetailsHeroContent(details: details),
                       ],
                     );
                   },
@@ -144,77 +130,52 @@ class AnimeDetailsHeroSection extends StatelessWidget {
 }
 
 class AnimeDetailsHeroContent extends StatelessWidget {
-  final Anime anime;
-  final String title;
+  final AnimeDetailsViewData details;
 
   const AnimeDetailsHeroContent({
     super.key,
-    required this.anime,
-    required this.title,
+    required this.details,
   });
-
-  String? _formatSeason() {
-    if (anime.season == null || anime.year == null) {
-      return null;
-    }
-
-    final season = anime.season!;
-    return '${season[0].toUpperCase()}${season.substring(1)} ${anime.year}';
-  }
 
   @override
   Widget build(BuildContext context) {
     final titleColor = Colors.white;
     final subtitleColor = Colors.white70;
-    final metadata = <Widget>[
-      if (anime.type != null)
-        AnimeDetailsInfoBadge(
-          icon: Symbols.movie_rounded,
-          label: anime.type!,
-        ),
-      if (anime.status != null)
-        AnimeDetailsInfoBadge(
-          icon: Symbols.schedule_rounded,
-          label: anime.status!,
-        ),
-      if (anime.episodes != null)
-        AnimeDetailsInfoBadge(
-          icon: Symbols.live_tv_rounded,
-          label: '${anime.episodes} eps',
-        ),
-      if (_formatSeason() != null)
-        AnimeDetailsInfoBadge(
-          icon: Symbols.calendar_month_rounded,
-          label: _formatSeason()!,
-        ),
-    ];
+    final metadata = details.heroBadges
+        .map(
+          (badge) => AnimeDetailsInfoBadge(
+            icon: _iconForHeroBadge(badge.kind),
+            label: badge.label,
+          ),
+        )
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(height: 8),
         Text(
-          title,
+          details.title,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 color: titleColor,
                 fontWeight: FontWeight.w700,
               ),
         ),
-        if (anime.titleJapanese?.isNotEmpty == true) ...[
+        if (details.japaneseTitle != null) ...[
           const SizedBox(height: 8),
           Text(
-            anime.titleJapanese!,
+            details.japaneseTitle!,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: subtitleColor,
                 ),
           ),
         ],
-        if (anime.titleSynonyms.isNotEmpty) ...[
+        if (details.synonymsLine != null) ...[
           const SizedBox(height: 8),
           Text(
-            anime.titleSynonyms.take(3).join(' • '),
+            details.synonymsLine!,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: subtitleColor,
@@ -222,7 +183,7 @@ class AnimeDetailsHeroContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        AnimeDetailsScorePanel(anime: anime),
+        AnimeDetailsScorePanel(stats: details.heroStats),
         const SizedBox(height: 16),
         Wrap(
           alignment: WrapAlignment.center,
@@ -232,12 +193,25 @@ class AnimeDetailsHeroContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         AnimeDetailsMetadataPanel(
-          anime: anime,
+          rows: details.metadataRows,
           labelColor: subtitleColor,
           valueColor: titleColor,
         ),
       ],
     );
+  }
+
+  IconData _iconForHeroBadge(AnimeDetailsHeroBadgeKind kind) {
+    switch (kind) {
+      case AnimeDetailsHeroBadgeKind.type:
+        return Symbols.movie_rounded;
+      case AnimeDetailsHeroBadgeKind.status:
+        return Symbols.schedule_rounded;
+      case AnimeDetailsHeroBadgeKind.episodes:
+        return Symbols.live_tv_rounded;
+      case AnimeDetailsHeroBadgeKind.season:
+        return Symbols.calendar_month_rounded;
+    }
   }
 }
 
@@ -283,11 +257,11 @@ class AnimeDetailsHeroPoster extends StatelessWidget {
 }
 
 class AnimeDetailsScorePanel extends StatelessWidget {
-  final Anime anime;
+  final List<AnimeDetailsHeroStatData> stats;
 
   const AnimeDetailsScorePanel({
     super.key,
-    required this.anime,
+    required this.stats,
   });
 
   @override
@@ -309,31 +283,31 @@ class AnimeDetailsScorePanel extends StatelessWidget {
           alignment: WrapAlignment.center,
           spacing: 24,
           runSpacing: 16,
-          children: [
-            AnimeDetailsHeroStat(
-              label: 'User score',
-              value: anime.score?.toStringAsFixed(2) ?? 'N/A',
-              icon: Symbols.star_rounded,
-            ),
-            AnimeDetailsHeroStat(
-              label: 'Rank',
-              value: anime.rank != null ? '#${anime.rank}' : 'Unranked',
-              icon: Symbols.leaderboard_rounded,
-            ),
-            AnimeDetailsHeroStat(
-              label: 'Popularity',
-              value: anime.popularity != null ? '#${anime.popularity}' : 'N/A',
-              icon: Symbols.thumb_up_rounded,
-            ),
-            AnimeDetailsHeroStat(
-              label: 'Members',
-              value: anime.members?.toString() ?? 'N/A',
-              icon: Symbols.groups_rounded,
-            ),
-          ],
+          children: stats
+              .map(
+                (stat) => AnimeDetailsHeroStat(
+                  label: stat.label,
+                  value: stat.value,
+                  icon: _iconForHeroStat(stat.kind),
+                ),
+              )
+              .toList(),
         ),
       ),
     );
+  }
+
+  IconData _iconForHeroStat(AnimeDetailsHeroStatKind kind) {
+    switch (kind) {
+      case AnimeDetailsHeroStatKind.userScore:
+        return Symbols.star_rounded;
+      case AnimeDetailsHeroStatKind.rank:
+        return Symbols.leaderboard_rounded;
+      case AnimeDetailsHeroStatKind.popularity:
+        return Symbols.thumb_up_rounded;
+      case AnimeDetailsHeroStatKind.members:
+        return Symbols.groups_rounded;
+    }
   }
 }
 
@@ -386,13 +360,13 @@ class AnimeDetailsHeroStat extends StatelessWidget {
 }
 
 class AnimeDetailsMetadataPanel extends StatelessWidget {
-  final Anime anime;
+  final List<AnimeDetailsMetadataRowData> rows;
   final Color? labelColor;
   final Color? valueColor;
 
   const AnimeDetailsMetadataPanel({
     super.key,
-    required this.anime,
+    required this.rows,
     this.labelColor,
     this.valueColor,
   });
@@ -414,45 +388,16 @@ class AnimeDetailsMetadataPanel extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AnimeDetailsLabelValueText(
-              label: 'Studios',
-              value: anime.studios.isNotEmpty
-                  ? anime.studios.map((studio) => studio.name).join(', ')
-                  : 'Unknown',
-              labelColor: labelColor,
-              valueColor: valueColor,
-            ),
-            AnimeDetailsLabelValueText(
-              label: 'Genres',
-              value: anime.genres.isNotEmpty
-                  ? anime.genres.map((genre) => genre.name).join(', ')
-                  : 'Unknown',
-              labelColor: labelColor,
-              valueColor: valueColor,
-            ),
-            if (anime.duration?.isNotEmpty == true)
-              AnimeDetailsLabelValueText(
-                label: 'Duration',
-                value: anime.duration!,
-                labelColor: labelColor,
-                valueColor: valueColor,
-              ),
-            if (anime.rating?.isNotEmpty == true)
-              AnimeDetailsLabelValueText(
-                label: 'Rating',
-                value: anime.rating!,
-                labelColor: labelColor,
-                valueColor: valueColor,
-              ),
-            if (anime.source?.isNotEmpty == true)
-              AnimeDetailsLabelValueText(
-                label: 'Source',
-                value: anime.source!,
-                labelColor: labelColor,
-                valueColor: valueColor,
-              ),
-          ],
+          children: rows
+              .map(
+                (row) => AnimeDetailsLabelValueText(
+                  label: row.label,
+                  value: row.value,
+                  labelColor: labelColor,
+                  valueColor: valueColor,
+                ),
+              )
+              .toList(),
         ),
       ),
     );
@@ -614,6 +559,7 @@ class _AnimeListManagementSectionState
   @override
   Widget build(BuildContext context) {
     final userDataAsync = ref.watch(userDataProvider);
+    final viewService = ref.read(animeDetailsViewServiceProvider);
 
     return Card(
       elevation: 0,
@@ -652,6 +598,10 @@ class _AnimeListManagementSectionState
                 return listEntryAsync.when(
                   data: (entry) {
                     final status = entry?.listStatus;
+                    final presentation = viewService.buildListEntryPresentation(
+                      status,
+                      widget.totalEpisodes,
+                    );
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,34 +612,27 @@ class _AnimeListManagementSectionState
                           children: [
                             _AnimeListInfoChip(
                               icon: Symbols.bookmark_rounded,
-                              label: status == null
-                                  ? 'Not in your list'
-                                  : _statusLabel(status.status),
+                              label: presentation.statusLabel,
                             ),
                             _AnimeListInfoChip(
                               icon: Symbols.play_circle_rounded,
-                              label: _episodesLabel(
-                                status?.numEpisodesWatched ?? 0,
-                                widget.totalEpisodes,
-                              ),
+                              label: presentation.episodesLabel,
                             ),
                             _AnimeListInfoChip(
                               icon: Symbols.star_rounded,
-                              label: status == null || status.score == 0
-                                  ? 'Not rated'
-                                  : 'Rated ${status.score}/10',
+                              label: presentation.scoreLabel,
                             ),
-                            if ((status?.tags ?? '').trim().isNotEmpty)
+                            if (presentation.tags != null)
                               _AnimeListInfoChip(
                                 icon: Symbols.sell_rounded,
-                                label: status!.tags!.trim(),
+                                label: presentation.tags!,
                               ),
                           ],
                         ),
-                        if ((status?.comments ?? '').trim().isNotEmpty) ...[
+                        if (presentation.comments != null) ...[
                           const SizedBox(height: 12),
                           Text(
-                            status!.comments!.trim(),
+                            presentation.comments!,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -708,10 +651,12 @@ class _AnimeListManagementSectionState
                                     : Symbols.edit_rounded,
                               ),
                               label: Text(
-                                status == null ? 'Add to list' : 'Edit entry',
+                                presentation.hasEntry
+                                    ? 'Edit entry'
+                                    : 'Add to list',
                               ),
                             ),
-                            if (status != null)
+                            if (presentation.hasEntry)
                               OutlinedButton.icon(
                                 onPressed: isSubmitting ? null : _removeEntry,
                                 icon: const Icon(Symbols.delete_rounded),
@@ -1144,41 +1089,8 @@ class _AnimeListInfoChip extends StatelessWidget {
   }
 }
 
-class _AnimeListStatusOption {
-  final String value;
-  final String label;
-
-  const _AnimeListStatusOption(this.value, this.label);
-}
-
-const animeListStatusOptions = [
-  _AnimeListStatusOption('watching', 'Watching'),
-  _AnimeListStatusOption('completed', 'Completed'),
-  _AnimeListStatusOption('on_hold', 'On hold'),
-  _AnimeListStatusOption('dropped', 'Dropped'),
-  _AnimeListStatusOption('plan_to_watch', 'Plan to watch'),
-];
-
-String _statusLabel(String status) {
-  for (final option in animeListStatusOptions) {
-    if (option.value == status) {
-      return option.label;
-    }
-  }
-
-  return status.replaceAll('_', ' ');
-}
-
-String _episodesLabel(int watchedEpisodes, int? totalEpisodes) {
-  if (totalEpisodes == null || totalEpisodes <= 0) {
-    return '$watchedEpisodes watched';
-  }
-
-  return '$watchedEpisodes / $totalEpisodes watched';
-}
-
 class AnimeDetailsRelationsSection extends StatelessWidget {
-  final BuiltList<Relation>? relations;
+  final List<AnimeDetailsRelationGroupViewData> relations;
 
   const AnimeDetailsRelationsSection({
     super.key,
@@ -1187,15 +1099,13 @@ class AnimeDetailsRelationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleRelations = relations?.take(12).toList() ?? const [];
-
     return AnimeDetailsSectionCard(
       title: 'Related media',
-      child: visibleRelations.isEmpty
+      child: relations.isEmpty
           ? const Text('No related media listed.')
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: visibleRelations
+              children: relations
                   .map(
                     (relation) => Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
@@ -1209,7 +1119,7 @@ class AnimeDetailsRelationsSection extends StatelessWidget {
 }
 
 class AnimeDetailsRecommendationsSection extends StatelessWidget {
-  final List<Recommendation> recommendations;
+  final List<AnimeDetailsRecommendationViewData> recommendations;
 
   const AnimeDetailsRecommendationsSection({
     super.key,
@@ -1218,20 +1128,18 @@ class AnimeDetailsRecommendationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleRecommendations = recommendations.take(10).toList();
-
     return AnimeDetailsSectionCard(
       title: 'Recommended next',
-      child: visibleRecommendations.isEmpty
+      child: recommendations.isEmpty
           ? const Text('No recommendations available.')
           : SizedBox(
               height: 250,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: visibleRecommendations.length,
+                itemCount: recommendations.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  final recommendation = visibleRecommendations[index];
+                  final recommendation = recommendations[index];
                   return AnimeDetailsRecommendationCard(
                     recommendation: recommendation,
                   );
@@ -1243,7 +1151,7 @@ class AnimeDetailsRecommendationsSection extends StatelessWidget {
 }
 
 class AnimeDetailsRecommendationCard extends StatelessWidget {
-  final Recommendation recommendation;
+  final AnimeDetailsRecommendationViewData recommendation;
 
   const AnimeDetailsRecommendationCard({
     super.key,
@@ -1256,15 +1164,15 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
       width: 140,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => openAnimeDetailsPage(context, recommendation.entry.malId),
+        onTap: () => openAnimeDetailsPage(context, recommendation.malId),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: recommendation.entry.imageUrl.isNotEmpty
+              child: recommendation.imageUrl.isNotEmpty
                   ? Image.network(
-                      recommendation.entry.imageUrl,
+                      recommendation.imageUrl,
                       height: 180,
                       width: 140,
                       fit: BoxFit.cover,
@@ -1289,7 +1197,7 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: Text(
-                recommendation.entry.title,
+                recommendation.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1307,7 +1215,7 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
 }
 
 class AnimeDetailsRelationGroup extends StatelessWidget {
-  final Relation relation;
+  final AnimeDetailsRelationGroupViewData relation;
 
   const AnimeDetailsRelationGroup({
     super.key,
@@ -1331,11 +1239,11 @@ class AnimeDetailsRelationGroup extends StatelessWidget {
             runSpacing: 8,
             alignment: WrapAlignment.start,
             runAlignment: WrapAlignment.start,
-            children: relation.entry
+            children: relation.entries
                 .map(
                   (entry) => ActionChip(
                     label: Text(entry.name),
-                    onPressed: entry.type.toLowerCase() == 'anime'
+                    onPressed: entry.canOpenAnimeDetails
                         ? () => openAnimeDetailsPage(context, entry.malId)
                         : null,
                   ),
