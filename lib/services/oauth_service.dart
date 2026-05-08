@@ -10,6 +10,8 @@ const clientId = String.fromEnvironment('MALAPI');
 const tokenUri = 'https://myanimelist.net/v1/oauth2/token';
 const authorizeUri = 'https://myanimelist.net/v1/oauth2/authorize';
 const apiBaseUrl = 'https://api.myanimelist.net/v2';
+const oauthCallbackUrlScheme = 'otaku.tracker';
+const oauthRedirectUri = '$oauthCallbackUrlScheme:/';
 
 class OauthService {
   Future<String?> login() async {
@@ -19,7 +21,7 @@ class OauthService {
     try {
       dev.log('Starting OAuth flow with URL: $loginUrl');
       final uri = await FlutterWebAuth2.authenticate(
-          url: loginUrl, callbackUrlScheme: 'otaku.tracker');
+          url: loginUrl, callbackUrlScheme: oauthCallbackUrlScheme);
       dev.log('OAuth callback received: $uri');
 
       final queryParams = Uri.parse(uri).queryParameters;
