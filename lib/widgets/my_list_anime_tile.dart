@@ -116,8 +116,12 @@ class MyListQuickEditButton extends ConsumerWidget {
               context: context,
               isScrollControlled: true,
               useSafeArea: true,
-              builder: (context) => MyListQuickEditSheet(
+              builder: (sheetContext) => MyListQuickEditSheet(
                 userAnimeData: userAnimeData,
+                onOpenAdvancedEdit: () {
+                  Navigator.of(sheetContext).pop();
+                  openAnimeDetailsPage(context, userAnimeData.node.id);
+                },
               ),
             );
           },
@@ -133,10 +137,12 @@ class MyListQuickEditButton extends ConsumerWidget {
 
 class MyListQuickEditSheet extends ConsumerStatefulWidget {
   final UserAnimeData userAnimeData;
+  final VoidCallback onOpenAdvancedEdit;
 
   const MyListQuickEditSheet({
     super.key,
     required this.userAnimeData,
+    required this.onOpenAdvancedEdit,
   });
 
   @override
@@ -165,6 +171,98 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
   void dispose() {
     watchedEpisodesController.dispose();
     super.dispose();
+  }
+
+  int _currentWatchedEpisodes() {
+    return int.tryParse(watchedEpisodesController.text.trim()) ??
+        widget.userAnimeData.listStatus.numEpisodesWatched;
+  }
+
+  void _setWatchedEpisodes(int value) {
+    final totalEpisodes = widget.userAnimeData.node.numEpisodes;
+    final clampedValue = totalEpisodes == null || totalEpisodes <= 0
+        ? value
+        : value.clamp(0, totalEpisodes);
+
+    watchedEpisodesController.value = TextEditingValue(
+      text: clampedValue.toString(),
+      selection: TextSelection.collapsed(
+        offset: clampedValue.toString().length,
+      ),
+    );
+  }
+
+  void _adjustWatchedEpisodes(int delta) {
+    final nextValue = (_currentWatchedEpisodes() + delta).clamp(0, 99999);
+    _setWatchedEpisodes(nextValue);
+  }
+
+  void _markCompleted() {
+    selectedStatus = 'completed';
+
+    final totalEpisodes = widget.userAnimeData.node.numEpisodes;
+    if (totalEpisodes != null && totalEpisodes > 0) {
+      _setWatchedEpisodes(totalEpisodes);
+    }
+  }
+
+  Future<void> _removeEntry() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove from your list?'),
+        content: Text(
+          'This will remove ${widget.userAnimeData.node.title} from your MyAnimeList anime list.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
+    try {
+      await ref
+          .read(animeListMutationControllerProvider)
+          .removeAnimeListEntry(widget.userAnimeData.node.id);
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Removed from your list.')),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to remove from your list: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -216,6 +314,9 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
   @override
   Widget build(BuildContext context) {
     final totalEpisodes = widget.userAnimeData.node.numEpisodes;
+    final watchedEpisodes = _currentWatchedEpisodes();
+    final canDecrementEpisodes = watchedEpisodes > 0;
+    final canIncrementEpisodes = totalEpisodes == null || watchedEpisodes < totalEpisodes;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -239,6 +340,43 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
               Text(
                 widget.userAnimeData.node.title,
                 style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Quick actions',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: isSaving || !canDecrementEpisodes
+                        ? null
+                        : () => setState(() {
+                            _adjustWatchedEpisodes(-1);
+                          }),
+                    icon: const Icon(Icons.remove_rounded),
+                    label: const Text('-1 episode'),
+                  ),
+                  FilledButton.tonalIcon(
+                    onPressed: isSaving || !canIncrementEpisodes
+                        ? null
+                        : () => setState(() {
+                            _adjustWatchedEpisodes(1);
+                          }),
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('+1 episode'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: isSaving
+                        ? null
+                        : () => setState(_markCompleted),
+                    icon: const Icon(Icons.check_circle_outline_rounded),
+                    label: const Text('Mark completed'),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -319,6 +457,26 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                       },
               ),
               const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: isSaving ? null : widget.onOpenAdvancedEdit,
+                    icon: const Icon(Icons.open_in_new_rounded),
+                    label: const Text('Advanced edit'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: isSaving ? null : _removeEntry,
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Remove from list'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               Text(
                 'Advanced fields such as tags, comments, and rewatch options remain available on the anime details page.',
                 style: Theme.of(context).textTheme.bodySmall,

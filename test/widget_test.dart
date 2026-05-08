@@ -883,6 +883,7 @@ void main() {
     expect(find.text('Quick edit'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '12');
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Save'));
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -891,6 +892,158 @@ void main() {
     expect(recordingService.lastUpdate, isNotNull);
     expect(recordingService.lastUpdate?.numWatchedEpisodes, 12);
     expect(find.text('12 / 24 watched'), findsOneWidget);
+  });
+
+  testWidgets('My List quick edit supports one-tap episode progress updates',
+      (WidgetTester tester) async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'watching',
+            score: 9,
+            mean: 8.9,
+            numEpisodes: 24,
+            numEpisodesWatched: 3,
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          animeListServiceProvider.overrideWith((ref) => recordingService),
+          oauthProvider.overrideWith(
+            (ref) => FakeOauthService(
+              username: 'lumen',
+              accessToken: 'token',
+            ),
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Quick edit Frieren'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, '+1 episode'));
+    await tester.pump();
+
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Save'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(recordingService.lastUpdate?.numWatchedEpisodes, 4);
+    expect(find.text('4 / 24 watched'), findsOneWidget);
+  });
+
+  testWidgets('My List quick edit can remove an anime from the tracked list',
+      (WidgetTester tester) async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'watching',
+            score: 9,
+            mean: 8.9,
+            numEpisodes: 24,
+            numEpisodesWatched: 3,
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          animeListServiceProvider.overrideWith((ref) => recordingService),
+          oauthProvider.overrideWith(
+            (ref) => FakeOauthService(
+              username: 'lumen',
+              accessToken: 'token',
+            ),
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Quick edit Frieren'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Remove from list'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remove from your list?'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(FilledButton, 'Remove'),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(recordingService.lastDeletedAnimeId, 1);
+    expect(find.text('No titles in All'), findsOneWidget);
+  });
+
+  testWidgets('My List quick edit can open the advanced details editor path',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+          animeDetailsProvider.overrideWith(
+            (ref, animeId) async => AnimeDetailsData(
+              anime: buildAnimeDetails(id: animeId, title: 'Frieren'),
+              recommendations: const [],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Quick edit Frieren'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Advanced edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anime Details'), findsOneWidget);
+    expect(find.text('SYNOPSIS'), findsOneWidget);
   });
 
   testWidgets('My Profile renders journey stats and separated logout action',

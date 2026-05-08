@@ -43,6 +43,11 @@ This file is for coding agents and LLM assistants working in this repository.
    - do not add new dependencies unless necessary
    - prefer small, direct widget extraction over new abstraction layers
 
+6. For UI/UX decisions, use and reference Material 3 guidance:
+   - prefer Material 3 components, patterns, and terminology where they fit the product
+   - use Material 3 color roles, spacing, states, and feedback patterns instead of ad hoc styling choices
+   - when choosing loading, empty, error, navigation, or interaction patterns, align them with Material 3 guidance unless the existing product intentionally differs
+
 ## Implementation Guidance
 
 - Read before editing.
