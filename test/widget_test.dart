@@ -2000,6 +2000,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('PosterImageTitle keeps the poster stack clipped with rounded corners',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: const Scaffold(
+          body: SizedBox(
+            width: 196,
+            child: PosterImageTitle(
+              imageUrl: 'https://cdn.example.com/frieren.jpg',
+              title: 'Frieren',
+            ),
+          ),
+        ),
+        overrides: const [],
+      ),
+    );
+    await tester.pump();
+
+    final posterClip = tester.widget<ClipRRect>(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is ClipRRect &&
+            widget.borderRadius ==
+                const BorderRadius.all(Radius.circular(15.0)),
+      ).first,
+    );
+
+    expect(
+      posterClip.borderRadius,
+      const BorderRadius.all(Radius.circular(15.0)),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('PosterImageTitle fits bounded poster-only layouts without overflow',
       (WidgetTester tester) async {
     await tester.pumpWidget(

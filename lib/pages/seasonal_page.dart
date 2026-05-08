@@ -79,9 +79,9 @@ class SeasonalPage extends ConsumerWidget {
                   itemCount: selectedAnimeList.length,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 200.0,
+                    mainAxisExtent: 308.0,
                     mainAxisSpacing: 10.0,
                     crossAxisSpacing: 10.0,
-                    childAspectRatio: 0.6,
                   ),
                 );
               },

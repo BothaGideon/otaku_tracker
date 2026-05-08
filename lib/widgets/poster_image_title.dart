@@ -6,6 +6,9 @@ import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 class PosterImageTitle extends StatelessWidget {
   static const int _titleMaxLines = 2;
   static const double _titleHeight = 36.0;
+  static const double _posterAspectRatio = 196.0 / 256.7;
+  static const BorderRadius _posterBorderRadius =
+      BorderRadius.all(Radius.circular(15.0));
 
   final Anime? anime;
   final String? userStatus;
@@ -66,116 +69,124 @@ class PosterImageTitle extends StatelessWidget {
 
     Widget buildPosterImage() {
       if (hasImage) {
-        return Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            Positioned.fill(
-              child: NetworkImageSkeleton(
-                imageUrl: imageUrlToUse,
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.transparent,
-                    ],
-                  ),
+        return ClipRRect(
+          borderRadius: _posterBorderRadius,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Positioned.fill(
+                child: NetworkImageSkeleton(
+                  imageUrl: imageUrlToUse,
+                  borderRadius: _posterBorderRadius,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Flexible(
-                        child: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 2.0),
-                                  child: Icon(
-                                      size: 16.0, Symbols.star_rounded),
-                                ),
-                                Text(
-                                  scoreToUse != null && scoreToUse > 0
-                                      ? scoreToUse is double
-                                          ? scoreToUse.toStringAsFixed(1)
-                                          : scoreToUse.toString()
-                                      : 'N/A',
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 14.0),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.7),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.bottomLeft,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 2.0),
+                                    child: Icon(
+                                        size: 16.0, Symbols.star_rounded),
+                                  ),
+                                  Text(
+                                    scoreToUse != null && scoreToUse > 0
+                                        ? scoreToUse is double
+                                            ? scoreToUse.toStringAsFixed(1)
+                                            : scoreToUse.toString()
+                                        : 'N/A',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14.0),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Flexible(
-                        child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            child: userStatus != null && userStatus!.isNotEmpty
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
-                                    decoration: BoxDecoration(
-                                      color: _getStatusColor(userStatus!),
-                                      borderRadius:
-                                          BorderRadius.circular(12.0),
-                                    ),
-                                    child: Text(
-                                      _formatStatusText(userStatus!),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10.0,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  )
-                                : showAuxiliaryStatWhenNoStatus
-                                    ? Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 3.0),
-                                            child: Icon(
-                                                size: 16.0, auxiliaryStatIcon),
+                        const SizedBox(width: 8.0),
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child:
+                                  userStatus != null && userStatus!.isNotEmpty
+                                      ? Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 4.0),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(userStatus!),
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
                                           ),
-                                          Text(
-                                            auxiliaryStatToUse?.toString() ??
-                                                'N/A',
+                                          child: Text(
+                                            _formatStatusText(userStatus!),
                                             style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14.0),
-                                            textAlign: TextAlign.center,
+                                              color: Colors.white,
+                                              fontSize: 10.0,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ],
-                                      )
-                                    : const SizedBox.shrink(),
+                                        )
+                                      : showAuxiliaryStatWhenNoStatus
+                                          ? Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 3.0),
+                                                  child: Icon(
+                                                    size: 16.0,
+                                                    auxiliaryStatIcon,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  auxiliaryStatToUse
+                                                          ?.toString() ??
+                                                      'N/A',
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14.0),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ],
+                                            )
+                                          : const SizedBox.shrink(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }
 
@@ -188,14 +199,23 @@ class PosterImageTitle extends StatelessWidget {
       builder: (context, constraints) {
         final hasBoundedHeight = constraints.hasBoundedHeight;
         final poster = hasBoundedHeight
-            ? Expanded(child: buildPosterImage())
+            ? Expanded(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: AspectRatio(
+                    aspectRatio: _posterAspectRatio,
+                    child: buildPosterImage(),
+                  ),
+                ),
+              )
             : SizedBox(
-                height: hasImage ? 260.0 : 244.0,
+                height: hasImage ? 256.7 : 244.0,
                 width: double.infinity,
                 child: buildPosterImage(),
               );
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             poster,
             if (showBottomTitle) ...[
