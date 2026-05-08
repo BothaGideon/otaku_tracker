@@ -9,10 +9,10 @@ import 'package:otaku_tracker/pages/landing_page.dart';
 import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
-import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
+import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
@@ -449,7 +449,7 @@ void main() {
     expect(find.text('183', skipOffstage: false), findsOneWidget);
   });
 
-  testWidgets('logged in My List shows profile action and filter chips',
+  testWidgets('logged in My List shows compact controls summary and trigger',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       createTestApp(
@@ -470,15 +470,12 @@ void main() {
     final avatar = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
     expect(avatar.pictureUrl,
         'https://cdn.myanimelist.net/images/userimages/1.jpg');
-    expect(find.byType(ChoiceChip), findsNWidgets(MyListStatusFilter.values.length));
-    expect(find.text('All'), findsOneWidget);
-    expect(find.text('Plan to watch'), findsOneWidget);
-    expect(find.text('Last updated'), findsOneWidget);
-    expect(find.text('Poster view'), findsOneWidget);
-    expect(find.text('Detail view'), findsOneWidget);
+    expect(find.text('List controls'), findsOneWidget);
+    expect(find.text('All • Last updated • Poster view'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Filter & sort'), findsOneWidget);
   });
 
-  testWidgets('tapping a filter chip updates the visible list and empty state',
+  testWidgets('My List controls sheet applies status changes and empty state',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       createTestApp(
@@ -499,17 +496,32 @@ void main() {
     expect(find.text('Frieren'), findsOneWidget);
     expect(find.text('Cowboy Bebop'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Completed'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
     await tester.pump();
-
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-
     await tester.pump(const Duration(milliseconds: 300));
 
+    expect(find.byType(MyListControlsSheet), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Completed').last);
+    await tester.pump();
+
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.text('Cowboy Bebop'), findsOneWidget);
     expect(find.text('Frieren'), findsNothing);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Dropped'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Dropped').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -534,7 +546,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'On hold'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'On hold').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -568,7 +587,15 @@ void main() {
     expect(find.byType(MyListDetailView), findsNothing);
     expect(find.text('3 / 24 watched'), findsOneWidget);
 
-    await tester.tap(find.text('Detail view'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.ensureVisible(find.text('Detail view').last);
+    await tester.tap(find.text('Detail view').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -579,7 +606,15 @@ void main() {
     expect(find.text('9 / 10'), findsOneWidget);
     expect(find.text('3 / 24 watched'), findsNothing);
 
-    await tester.tap(find.text('Poster view'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.ensureVisible(find.text('Poster view').last);
+    await tester.tap(find.text('Poster view').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -628,7 +663,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Detail view'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.ensureVisible(find.text('Detail view').last);
+    await tester.tap(find.text('Detail view').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -639,10 +682,13 @@ void main() {
 
     expect(defaultOrder, ['Zeta', 'Alpha', 'Middle']);
 
-    await tester.tap(find.text('Last updated'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('Title').last);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Title').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -652,6 +698,55 @@ void main() {
         .toList();
 
     expect(titleSortedOrder, ['Alpha', 'Middle', 'Zeta']);
+  });
+
+  testWidgets('My List controls sheet reset returns to default summary',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Completed').last);
+    await tester.pump();
+    await tester.ensureVisible(find.text('Detail view').last);
+    await tester.tap(find.text('Detail view').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Completed • Last updated • Detail view'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'Reset'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Reset'));
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('All • Last updated • Poster view'), findsOneWidget);
   });
 
   testWidgets('My List quick edit updates watched progress from a grid tile',

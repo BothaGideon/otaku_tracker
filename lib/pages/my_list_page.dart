@@ -7,6 +7,7 @@ import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
+import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/my_list_anime_tile.dart';
@@ -213,107 +214,18 @@ class _MyListPageState extends ConsumerState<MyListPage> {
             appBar: const OtakuTrackerAppBar(title: Text('My List')),
             body: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final controls = [
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: MyListStatusFilter.values
-                              .map(
-                                (status) => ChoiceChip(
-                                  label: Text(status.label),
-                                  selected: selectedStatus == status,
-                                  showCheckmark: false,
-                                  onSelected: (_) {
-                                    ref.read(myListFilterProvider.notifier).state =
-                                        status;
-                                  },
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 180,
-                              child: DropdownButtonFormField<MyListSortOption>(
-                                initialValue: selectedSort,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Sort',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                                items: MyListSortOption.values
-                                    .map(
-                                      (sortOption) =>
-                                          DropdownMenuItem<MyListSortOption>(
-                                        value: sortOption,
-                                        child: Text(sortOption.label),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    ref.read(myListSortProvider.notifier).state =
-                                        value;
-                                  }
-                                },
-                              ),
-                            ),
-                            SegmentedButton<MyListViewMode>(
-                              segments: MyListViewMode.values
-                                  .map(
-                                    (viewMode) => ButtonSegment<MyListViewMode>(
-                                      value: viewMode,
-                                      label: Text(viewMode.label),
-                                    ),
-                                  )
-                                  .toList(),
-                              selected: {selectedViewMode},
-                              onSelectionChanged: (selection) {
-                                if (selection.isNotEmpty) {
-                                  ref.read(myListViewModeProvider.notifier).state =
-                                      selection.first;
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ];
-
-                      if (constraints.maxWidth < 720) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            controls.first,
-                            const SizedBox(height: 12),
-                            controls.last,
-                          ],
-                        );
-                      }
-
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: controls.first),
-                          const SizedBox(width: 12),
-                          Flexible(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: controls.last,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                MyListControlsBar(
+                  selectedStatus: selectedStatus,
+                  selectedSort: selectedSort,
+                  selectedViewMode: selectedViewMode,
+                  onApply: (selection) {
+                    ref.read(myListFilterProvider.notifier).state =
+                        selection.status;
+                    ref.read(myListSortProvider.notifier).state =
+                        selection.sort;
+                    ref.read(myListViewModeProvider.notifier).state =
+                        selection.viewMode;
+                  },
                 ),
                 Expanded(
                   child: userAnimeAsync.when(
