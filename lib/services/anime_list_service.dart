@@ -98,7 +98,7 @@ class AnimeListService {
     final request = http.Request(
       'GET',
       Uri.parse(
-        'https://api.myanimelist.net/v2/users/@me/animelist?limit=1000&fields=list_status{priority,num_times_rewatched,rewatch_value,tags,comments},mean',
+        'https://api.myanimelist.net/v2/users/@me/animelist?limit=1000&fields=list_status{priority,num_times_rewatched,rewatch_value,tags,comments},mean,num_episodes',
       ),
     );
     request.headers.addAll({'Authorization': 'Bearer $accessToken'});

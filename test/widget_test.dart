@@ -39,6 +39,7 @@ UserAnimeData buildUserAnimeData({
   required String status,
   int score = 0,
   double? mean,
+  int? numEpisodes,
   int numEpisodesWatched = 0,
   bool isRewatching = false,
   int? priority,
@@ -48,7 +49,12 @@ UserAnimeData buildUserAnimeData({
   String? comments,
 }) {
   return UserAnimeData(
-    node: Node(id: id, title: title, mean: mean),
+    node: Node(
+      id: id,
+      title: title,
+      mean: mean,
+      numEpisodes: numEpisodes,
+    ),
     listStatus: ListStatus(
       status: status,
       score: score,
@@ -350,6 +356,8 @@ void main() {
         status: 'watching',
         score: 9,
         mean: 8.9,
+        numEpisodes: 24,
+        numEpisodesWatched: 3,
       ),
       buildUserAnimeData(
         id: 2,
@@ -530,6 +538,64 @@ void main() {
       ),
     );
     expect(monsterPoster.userScore, 8.7);
+  });
+
+  testWidgets('My List quick edit updates watched progress from a grid tile',
+      (WidgetTester tester) async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'watching',
+            score: 9,
+            mean: 8.9,
+            numEpisodes: 24,
+            numEpisodesWatched: 3,
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          animeListServiceProvider.overrideWith((ref) => recordingService),
+          oauthProvider.overrideWith(
+            (ref) => FakeOauthService(
+              username: 'lumen',
+              accessToken: 'token',
+            ),
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('3 / 24 watched'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Quick edit Frieren'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quick edit'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '12');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(recordingService.lastUpdate, isNotNull);
+    expect(recordingService.lastUpdate?.numWatchedEpisodes, 12);
+    expect(find.text('12 / 24 watched'), findsOneWidget);
   });
 
   testWidgets('My Profile renders journey stats and separated logout action',
@@ -1038,7 +1104,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Frieren').first);
+    await tester.tap(find.byKey(const ValueKey(1)));
     await tester.pumpAndSettle();
 
     expect(find.text('Anime Details'), findsOneWidget);

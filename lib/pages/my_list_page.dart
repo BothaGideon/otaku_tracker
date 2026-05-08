@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
-import 'package:otaku_tracker/widgets/poster_image_title.dart';
+import 'package:otaku_tracker/widgets/my_list_anime_tile.dart';
 
 class MyListPage extends ConsumerStatefulWidget {
   const MyListPage({super.key});
@@ -208,20 +207,11 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                         ),
                         itemBuilder: (context, index) {
                           final userAnimeData = filteredList[index];
-                          final node = userAnimeData.node;
-                          final displayedScore = userAnimeData.listStatus.score > 0
-                              ? userAnimeData.listStatus.score
-                              : node.mean;
 
-                          return InkWell(
-                            key: ValueKey(node.id),
-                            borderRadius: BorderRadius.circular(15),
-                            onTap: () => openAnimeDetailsPage(context, node.id),
-                            child: PosterImageTitle(
-                              imageUrl: node.mainPicture?.medium,
-                              title: node.title,
-                              userStatus: userAnimeData.listStatus.status,
-                              userScore: displayedScore,
+                          return KeyedSubtree(
+                            key: ValueKey(userAnimeData.node.id),
+                            child: MyListAnimeTile(
+                              userAnimeData: userAnimeData,
                             ),
                           );
                         },
