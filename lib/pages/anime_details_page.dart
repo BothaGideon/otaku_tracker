@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/widgets/anime_details_content.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 
 class AnimeDetailsPage extends ConsumerWidget {
@@ -21,7 +22,7 @@ class AnimeDetailsPage extends ConsumerWidget {
       appBar: const OtakuTrackerAppBar(title: Text('Anime Details')),
       body: animeDetailsAsync.when(
         data: (details) => AnimeDetailsContent(details: details),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const AnimeDetailsPageSkeleton(),
         error: (error, stack) => LoadingErrorState(
           onRetry: () => ref.invalidate(animeDetailsProvider(animeId)),
         ),

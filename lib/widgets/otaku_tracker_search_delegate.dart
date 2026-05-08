@@ -4,6 +4,7 @@ import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 
 class OtakuTrackerSearchDelegate extends SearchDelegate<void> {
@@ -73,7 +74,7 @@ class _SearchResults extends ConsumerWidget {
 
         return _AnimeSearchGrid(results: results);
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SearchResultsSkeleton(),
       error: (error, stack) => LoadingErrorState(
         onRetry: () => ref.invalidate(animeSearchProvider(trimmedQuery)),
       ),
@@ -178,7 +179,7 @@ class _QuickFilterBrowseViewState extends ConsumerState<_QuickFilterBrowseView> 
         Expanded(
           child: filterResultsAsync.when(
             data: (results) => _AnimeSearchGrid(results: results),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const SearchResultsSkeleton(),
             error: (error, stack) => LoadingErrorState(
               onRetry: () => ref.invalidate(
                 animeSearchQuickFilterProvider(selectedFilter),

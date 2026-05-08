@@ -6,6 +6,7 @@ import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 
 class AnimeDetailsContent extends StatelessWidget {
   final AnimeDetailsViewData details;
@@ -667,10 +668,7 @@ class _AnimeListManagementSectionState
                       ],
                     );
                   },
-                  loading: () => const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Loading your list entry...'),
-                  ),
+                  loading: () => const AnimeDetailsAccountSectionSkeleton(),
                   error: (error, stack) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -685,10 +683,7 @@ class _AnimeListManagementSectionState
                   ),
                 );
               },
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('Loading your account state...'),
-              ),
+              loading: () => const AnimeDetailsAccountSectionSkeleton(),
               error: (error, stack) => Text(
                 'Failed to load account state: $error',
               ),

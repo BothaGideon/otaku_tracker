@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
@@ -217,6 +220,43 @@ class RecordingAnimeListService extends FakeAnimeListService {
     _userAnimeList = UserAnimeListDTO(
       data: _userAnimeList.data.where((item) => item.node.id != animeId).toList(),
     );
+  }
+}
+
+class DelayedAnimeListService extends FakeAnimeListService {
+  DelayedAnimeListService({
+    Future<AnimeDTO>? searchFuture,
+    Future<AnimeDTO>? topAnimeFuture,
+    Future<AnimeDTO>? topRatedAnimeFuture,
+    Future<AnimeDTO>? recentlyAddedAnimeFuture,
+  })  : _searchFuture = searchFuture,
+        _topAnimeFuture = topAnimeFuture,
+        _topRatedAnimeFuture = topRatedAnimeFuture,
+        _recentlyAddedAnimeFuture = recentlyAddedAnimeFuture;
+
+  final Future<AnimeDTO>? _searchFuture;
+  final Future<AnimeDTO>? _topAnimeFuture;
+  final Future<AnimeDTO>? _topRatedAnimeFuture;
+  final Future<AnimeDTO>? _recentlyAddedAnimeFuture;
+
+  @override
+  Future<AnimeDTO> searchAnime(String query, {int limit = 30}) {
+    return _searchFuture ?? super.searchAnime(query, limit: limit);
+  }
+
+  @override
+  Future<AnimeDTO> getTopAnime({int limit = 30}) {
+    return _topAnimeFuture ?? super.getTopAnime(limit: limit);
+  }
+
+  @override
+  Future<AnimeDTO> getTopRatedAnime({int limit = 30}) {
+    return _topRatedAnimeFuture ?? super.getTopRatedAnime(limit: limit);
+  }
+
+  @override
+  Future<AnimeDTO> getRecentlyAddedAnime({int limit = 30}) {
+    return _recentlyAddedAnimeFuture ?? super.getRecentlyAddedAnime(limit: limit);
   }
 }
 
@@ -937,7 +977,7 @@ void main() {
     await tester.tap(find.byTooltip('Quick edit Frieren'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, '+1 episode'));
+    await tester.tap(find.widgetWithText(FilledButton, '1 episode'));
     await tester.pump();
 
     await tester.ensureVisible(find.widgetWithText(FilledButton, 'Save'));
@@ -1192,6 +1232,33 @@ void main() {
         'https://cdn.myanimelist.net/images/userimages/3.jpg');
   });
 
+  testWidgets('LandingPage shows a skeleton while the combined list is loading',
+      (WidgetTester tester) async {
+    final combinedListCompleter = Completer<CombinedData>();
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const LandingPage(),
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': null,
+              'accessToken': null,
+              'picture': null,
+            },
+          ),
+          combinedAnimeListProvider.overrideWith(
+            (ref) => combinedListCompleter.future,
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(LandingPageSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets('shared app bar opens universal search and shows results',
       (WidgetTester tester) async {
     await tester.pumpWidget(
@@ -1325,6 +1392,57 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('search shows skeleton loading for quick filters and typed results',
+      (WidgetTester tester) async {
+    final searchCompleter = Completer<AnimeDTO>();
+    final quickFilterCompleter = Completer<AnimeDTO>();
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const LandingPage(),
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          animeListServiceProvider.overrideWith(
+            (ref) => DelayedAnimeListService(
+              searchFuture: searchCompleter.future,
+              topAnimeFuture: quickFilterCompleter.future,
+            ),
+          ),
+          combinedAnimeListProvider.overrideWith(
+            (ref) async => CombinedData(
+              currentSeasonAnimeList: const [],
+              previousSeasonAnimeList: const [],
+              upcomingSeasonAnimeList: const [],
+              topUpcoming: const [],
+              topAiring: const [],
+              mostPopular: const [],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Search anime'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search for an anime title'), findsOneWidget);
+    expect(find.byType(SearchResultsSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'steins');
+    await tester.pump();
+
+    expect(find.byType(SearchResultsSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets('universal search shows an empty state when nothing matches',
       (WidgetTester tester) async {
     await tester.pumpWidget(
@@ -1389,6 +1507,80 @@ void main() {
     expect(find.text('Frieren Season 2'), findsOneWidget);
     expect(find.text('RECOMMENDED NEXT'), findsOneWidget);
     expect(find.text('Delicious in Dungeon'), findsOneWidget);
+  });
+
+  testWidgets('My List keeps controls visible and shows a skeleton while the list loads',
+      (WidgetTester tester) async {
+    final userAnimeCompleter = Completer<UserAnimeListDTO>();
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith(
+            (ref) => userAnimeCompleter.future,
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Selected filters'), findsOneWidget);
+    expect(find.byType(MyListPosterGridSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('My Profile shows a skeleton while profile data is loading',
+      (WidgetTester tester) async {
+    final profileCompleter = Completer<Map<String, Object?>>();
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const MyProfilePage(),
+        overrides: [
+          currentUserProfileProvider.overrideWith(
+            (ref) => profileCompleter.future,
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(MyProfilePageSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('AnimeDetailsPage shows a page skeleton while details are loading',
+      (WidgetTester tester) async {
+    final detailsCompleter = Completer<AnimeDetailsData>();
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const AnimeDetailsPage(animeId: 1),
+        overrides: [
+          animeDetailsProvider.overrideWith(
+            (ref, animeId) => detailsCompleter.future,
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(AnimeDetailsPageSkeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('Anime details shows an add-to-list action when the title is not tracked',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
 
@@ -340,7 +341,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const MyProfilePageSkeleton(),
         error: (error, stack) => LoadingErrorState(
           onRetry: () => ref.invalidate(currentUserProfileProvider),
         ),

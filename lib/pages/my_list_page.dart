@@ -8,9 +8,10 @@ import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
-import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/my_list_anime_tile.dart';
+import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 
 class MyListPage extends ConsumerStatefulWidget {
   const MyListPage({super.key});
@@ -280,8 +281,13 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                             );
                           });
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    loading: () {
+                      if (selectedViewMode == MyListViewMode.detail) {
+                        return const MyListDetailListSkeleton();
+                      }
+
+                      return const MyListPosterGridSkeleton();
+                    },
                     error: (error, stack) => LoadingErrorState(
                       onRetry: () {
                         // Retry logic if needed
@@ -295,7 +301,8 @@ class _MyListPageState extends ConsumerState<MyListPage> {
         }
       },
       loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        appBar: OtakuTrackerAppBar(title: Text('My List')),
+        body: MyListPageSkeleton(),
       ),
       error: (error, stack) => Scaffold(
         body: Center(child: Text('Error loading user data: $error')),

@@ -7,6 +7,7 @@ import '../constants/anime_seasons_helper.dart';
 import '../providers/anime_list_provider.dart';
 import '../providers/season_state_provider.dart';
 import '../widgets/loading_error_state.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/otaku_tracker_app_bar.dart';
 import '../widgets/poster_image_title.dart';
 
@@ -84,7 +85,7 @@ class SeasonalPage extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const PosterGridSkeleton(),
               error: (error, stack) => LoadingErrorState(
                 onRetry: () => ref.invalidate(combinedAnimeListProvider),
               ),

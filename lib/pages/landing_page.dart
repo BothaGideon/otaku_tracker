@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/widgets/horizontal_carousel.dart';
+import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/otaku_tracker_app_bar.dart';
 
@@ -74,7 +75,7 @@ class LandingPage extends ConsumerWidget {
                 // _items.insert(newIndex, item);
               });
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LandingPageSkeleton(),
         error: (error, stack) => LoadingErrorState(
           onRetry: () => ref.invalidate(combinedAnimeListProvider),
         ),
