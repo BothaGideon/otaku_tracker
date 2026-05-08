@@ -39,14 +39,26 @@ UserAnimeData buildUserAnimeData({
   required String status,
   int score = 0,
   double? mean,
+  int numEpisodesWatched = 0,
+  bool isRewatching = false,
+  int? priority,
+  int? numTimesRewatched,
+  int? rewatchValue,
+  String? tags,
+  String? comments,
 }) {
   return UserAnimeData(
     node: Node(id: id, title: title, mean: mean),
     listStatus: ListStatus(
       status: status,
       score: score,
-      numEpisodesWatched: 0,
-      isRewatching: false,
+      numEpisodesWatched: numEpisodesWatched,
+      isRewatching: isRewatching,
+      priority: priority,
+      numTimesRewatched: numTimesRewatched,
+      rewatchValue: rewatchValue,
+      tags: tags,
+      comments: comments,
       updatedAt: '2024-01-01T00:00:00+00:00',
     ),
   );
@@ -130,6 +142,70 @@ class FakeAnimeListService extends AnimeListService {
           numScoringUsers: 12450,
         ),
       ],
+    );
+  }
+}
+
+class RecordingAnimeListService extends FakeAnimeListService {
+  RecordingAnimeListService({required UserAnimeListDTO initialUserAnimeList})
+      : _userAnimeList = initialUserAnimeList;
+
+  UserAnimeListDTO _userAnimeList;
+  AnimeListStatusUpdate? lastUpdate;
+  int? lastDeletedAnimeId;
+
+  @override
+  Future<UserAnimeListDTO> getUserAnimeList(String accessToken) async {
+    return _userAnimeList;
+  }
+
+  @override
+  Future<ListStatus> updateMyAnimeListStatus(
+    String accessToken,
+    int animeId,
+    AnimeListStatusUpdate update,
+  ) async {
+    lastUpdate = update;
+
+    final updatedStatus = ListStatus(
+      status: update.status ?? 'plan_to_watch',
+      score: update.score ?? 0,
+      numEpisodesWatched: update.numWatchedEpisodes ?? 0,
+      isRewatching: update.isRewatching ?? false,
+      priority: update.priority,
+      numTimesRewatched: update.numTimesRewatched,
+      rewatchValue: update.rewatchValue,
+      tags: update.tags,
+      comments: update.comments,
+      updatedAt: '2024-01-02T00:00:00+00:00',
+    );
+
+    final nextData = [..._userAnimeList.data];
+    final existingIndex = nextData.indexWhere((item) => item.node.id == animeId);
+
+    final updatedItem = UserAnimeData(
+      node: existingIndex >= 0
+          ? nextData[existingIndex].node
+          : Node(id: animeId, title: 'Anime $animeId'),
+      listStatus: updatedStatus,
+    );
+
+    if (existingIndex >= 0) {
+      nextData[existingIndex] = updatedItem;
+    } else {
+      nextData.add(updatedItem);
+    }
+
+    _userAnimeList = UserAnimeListDTO(data: nextData);
+
+    return updatedStatus;
+  }
+
+  @override
+  Future<void> deleteMyAnimeListStatus(String accessToken, int animeId) async {
+    lastDeletedAnimeId = animeId;
+    _userAnimeList = UserAnimeListDTO(
+      data: _userAnimeList.data.where((item) => item.node.id != animeId).toList(),
     );
   }
 }
@@ -799,6 +875,143 @@ void main() {
     expect(find.text('Frieren Season 2'), findsOneWidget);
     expect(find.text('RECOMMENDED NEXT'), findsOneWidget);
     expect(find.text('Delicious in Dungeon'), findsOneWidget);
+  });
+
+  testWidgets('Anime details shows an add-to-list action when the title is not tracked',
+      (WidgetTester tester) async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 2,
+            title: 'Cowboy Bebop',
+            status: 'completed',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const AnimeDetailsPage(animeId: 1),
+        overrides: [
+          animeDetailsProvider.overrideWith(
+            (ref, animeId) async => AnimeDetailsData(
+              anime: buildAnimeDetails(id: animeId, title: 'Frieren'),
+              recommendations: const [],
+            ),
+          ),
+          animeListServiceProvider.overrideWith((ref) => recordingService),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add to list'), findsOneWidget);
+    expect(find.text('Not in your list'), findsOneWidget);
+  });
+
+  test('Anime list mutation controller saves updated MAL list progress and notes',
+      () async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'watching',
+            score: 9,
+            mean: 8.9,
+            numEpisodesWatched: 3,
+          ),
+        ],
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        animeListServiceProvider.overrideWith((ref) => recordingService),
+        oauthProvider.overrideWith(
+          (ref) => FakeOauthService(
+            username: 'lumen',
+            accessToken: 'token',
+          ),
+        ),
+        userDataProvider.overrideWith(
+          (ref) async => {
+            'username': 'lumen',
+            'accessToken': 'token',
+            'picture': null,
+          },
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(animeListMutationControllerProvider).updateAnimeListEntry(
+          1,
+          const AnimeListStatusUpdate(
+            status: 'watching',
+            score: 9,
+            numWatchedEpisodes: 12,
+            comments: 'Great mid-season arc',
+          ),
+        );
+    final refreshedList = await container.read(userAnimeListProvider.future);
+
+    expect(recordingService.lastUpdate, isNotNull);
+    expect(recordingService.lastUpdate?.numWatchedEpisodes, 12);
+    expect(recordingService.lastUpdate?.comments, 'Great mid-season arc');
+    expect(refreshedList.data.first.listStatus.numEpisodesWatched, 12);
+    expect(refreshedList.data.first.listStatus.comments, 'Great mid-season arc');
+  });
+
+  test('Anime list mutation controller removes a MAL list entry',
+      () async {
+    final recordingService = RecordingAnimeListService(
+      initialUserAnimeList: UserAnimeListDTO(
+        data: [
+          buildUserAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'watching',
+            score: 9,
+            mean: 8.9,
+          ),
+        ],
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        animeListServiceProvider.overrideWith((ref) => recordingService),
+        oauthProvider.overrideWith(
+          (ref) => FakeOauthService(
+            username: 'lumen',
+            accessToken: 'token',
+          ),
+        ),
+        userDataProvider.overrideWith(
+          (ref) async => {
+            'username': 'lumen',
+            'accessToken': 'token',
+            'picture': null,
+          },
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(animeListMutationControllerProvider).removeAnimeListEntry(1);
+    final refreshedList = await container.read(userAnimeListProvider.future);
+
+    expect(recordingService.lastDeletedAnimeId, 1);
+    expect(refreshedList.data, isEmpty);
   });
 
   testWidgets('tapping an anime from My List opens the details page',

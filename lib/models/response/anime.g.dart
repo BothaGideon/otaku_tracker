@@ -99,7 +99,12 @@ ListStatus _$ListStatusFromJson(Map<String, dynamic> json) => ListStatus(
       score: (json['score'] as num).toInt(),
       numEpisodesWatched: (json['num_episodes_watched'] as num).toInt(),
       isRewatching: json['is_rewatching'] as bool,
-      updatedAt: json['updated_at'] as String,
+      priority: (json['priority'] as num?)?.toInt(),
+      numTimesRewatched: (json['num_times_rewatched'] as num?)?.toInt(),
+      rewatchValue: (json['rewatch_value'] as num?)?.toInt(),
+      tags: _tagsFromJson(json['tags']),
+      comments: json['comments'] as String?,
+      updatedAt: json['updated_at'] as String?,
     );
 
 Map<String, dynamic> _$ListStatusToJson(ListStatus instance) =>
@@ -108,5 +113,10 @@ Map<String, dynamic> _$ListStatusToJson(ListStatus instance) =>
       'score': instance.score,
       'num_episodes_watched': instance.numEpisodesWatched,
       'is_rewatching': instance.isRewatching,
+      'priority': instance.priority,
+      'num_times_rewatched': instance.numTimesRewatched,
+      'rewatch_value': instance.rewatchValue,
+      'tags': _tagsToJson(instance.tags),
+      'comments': instance.comments,
       'updated_at': instance.updatedAt,
     };

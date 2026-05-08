@@ -116,12 +116,77 @@ final currentUserProfileProvider = FutureProvider<Map<String, Object?>>((ref) as
 });
 
 final userAnimeListProvider = FutureProvider<UserAnimeListDTO>((ref) async {
-  final oauthService = ref.read(oauthProvider);
-  final accessToken = await oauthService.getAccessToken();
+  final userData = await ref.watch(userDataProvider.future);
+  final accessToken = userData['accessToken'];
   if (accessToken == null) throw Exception('Not logged in');
   final service = ref.read(animeListServiceProvider);
   return service.getUserAnimeList(accessToken);
 });
+
+final userAnimeListEntryProvider =
+    Provider.family<AsyncValue<UserAnimeData?>, int>((ref, animeId) {
+  final userAnimeListAsync = ref.watch(userAnimeListProvider);
+
+  return userAnimeListAsync.whenData((userAnimeList) {
+    for (final item in userAnimeList.data) {
+      if (item.node.id == animeId) {
+        return item;
+      }
+    }
+
+    return null;
+  });
+});
+
+final animeListMutationControllerProvider =
+    Provider<AnimeListMutationController>((ref) {
+  return AnimeListMutationController(ref);
+});
+
+class AnimeListMutationController {
+  final Ref ref;
+
+  AnimeListMutationController(this.ref);
+
+  Future<ListStatus> updateAnimeListEntry(
+    int animeId,
+    AnimeListStatusUpdate update,
+  ) async {
+    final oauthService = ref.read(oauthProvider);
+    final accessToken = await oauthService.getAccessToken();
+
+    if (accessToken == null) {
+      throw Exception('Not logged in');
+    }
+
+    final service = ref.read(animeListServiceProvider);
+    final updatedStatus = await service.updateMyAnimeListStatus(
+      accessToken,
+      animeId,
+      update,
+    );
+
+    ref.invalidate(userAnimeListProvider);
+    ref.invalidate(currentUserProfileProvider);
+
+    return updatedStatus;
+  }
+
+  Future<void> removeAnimeListEntry(int animeId) async {
+    final oauthService = ref.read(oauthProvider);
+    final accessToken = await oauthService.getAccessToken();
+
+    if (accessToken == null) {
+      throw Exception('Not logged in');
+    }
+
+    final service = ref.read(animeListServiceProvider);
+    await service.deleteMyAnimeListStatus(accessToken, animeId);
+
+    ref.invalidate(userAnimeListProvider);
+    ref.invalidate(currentUserProfileProvider);
+  }
+}
 
 final animeSearchProvider =
     FutureProvider.autoDispose.family<List<AnimeData>, String>((ref, query) async {

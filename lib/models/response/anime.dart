@@ -131,12 +131,45 @@ class ListStatus {
   final int numEpisodesWatched;
   @JsonKey(name: 'is_rewatching')
   final bool isRewatching;
+  final int? priority;
+  @JsonKey(name: 'num_times_rewatched')
+  final int? numTimesRewatched;
+  @JsonKey(name: 'rewatch_value')
+  final int? rewatchValue;
+  @JsonKey(fromJson: _tagsFromJson, toJson: _tagsToJson)
+  final String? tags;
+  final String? comments;
   @JsonKey(name: 'updated_at')
-  final String updatedAt;
+  final String? updatedAt;
 
-  ListStatus({required this.status, required this.score, required this.numEpisodesWatched, required this.isRewatching, required this.updatedAt});
+  ListStatus({
+    required this.status,
+    required this.score,
+    required this.numEpisodesWatched,
+    required this.isRewatching,
+    this.priority,
+    this.numTimesRewatched,
+    this.rewatchValue,
+    this.tags,
+    this.comments,
+    this.updatedAt,
+  });
 
   factory ListStatus.fromJson(Map<String, dynamic> json) => _$ListStatusFromJson(json);
 
   Map<String, dynamic> toJson() => _$ListStatusToJson(this);
 }
+
+String? _tagsFromJson(Object? json) {
+  if (json is String) {
+    return json;
+  }
+
+  if (json is List) {
+    return json.whereType<String>().join(', ');
+  }
+
+  return null;
+}
+
+Object? _tagsToJson(String? tags) => tags;
