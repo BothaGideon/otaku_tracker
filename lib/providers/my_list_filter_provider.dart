@@ -23,8 +23,22 @@ enum MyListViewMode {
   final String label;
 }
 
+enum MyListSortOption {
+  lastUpdated('Last updated'),
+  title('Title'),
+  score('Score'),
+  progress('Progress');
+
+  const MyListSortOption(this.label);
+
+  final String label;
+}
+
 final myListFilterProvider =
     StateProvider<MyListStatusFilter>((ref) => MyListStatusFilter.all);
 
 final myListViewModeProvider =
     StateProvider<MyListViewMode>((ref) => MyListViewMode.poster);
+
+final myListSortProvider =
+    StateProvider<MyListSortOption>((ref) => MyListSortOption.lastUpdated);

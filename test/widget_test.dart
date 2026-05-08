@@ -42,6 +42,7 @@ UserAnimeData buildUserAnimeData({
   double? mean,
   int? numEpisodes,
   int numEpisodesWatched = 0,
+  String updatedAt = '2024-01-01T00:00:00+00:00',
   bool isRewatching = false,
   int? priority,
   int? numTimesRewatched,
@@ -66,7 +67,7 @@ UserAnimeData buildUserAnimeData({
       rewatchValue: rewatchValue,
       tags: tags,
       comments: comments,
-      updatedAt: '2024-01-01T00:00:00+00:00',
+      updatedAt: updatedAt,
     ),
   );
 }
@@ -472,6 +473,7 @@ void main() {
     expect(find.byType(ChoiceChip), findsNWidgets(MyListStatusFilter.values.length));
     expect(find.text('All'), findsOneWidget);
     expect(find.text('Plan to watch'), findsOneWidget);
+    expect(find.text('Last updated'), findsOneWidget);
     expect(find.text('Poster view'), findsOneWidget);
     expect(find.text('Detail view'), findsOneWidget);
   });
@@ -502,13 +504,14 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
 
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Cowboy Bebop'), findsOneWidget);
     expect(find.text('Frieren'), findsNothing);
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Dropped'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('No titles in Dropped'), findsOneWidget);
   });
@@ -532,7 +535,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'On hold'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Monster'), findsOneWidget);
     final monsterPoster = tester.widget<PosterImageTitle>(
@@ -565,7 +569,8 @@ void main() {
     expect(find.text('3 / 24 watched'), findsOneWidget);
 
     await tester.tap(find.text('Detail view'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(MyListDetailView), findsOneWidget);
     expect(find.text('Title'), findsOneWidget);
@@ -575,10 +580,78 @@ void main() {
     expect(find.text('3 / 24 watched'), findsNothing);
 
     await tester.tap(find.text('Poster view'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(MyListDetailView), findsNothing);
     expect(find.text('3 / 24 watched'), findsOneWidget);
+  });
+
+  testWidgets('My List defaults to last updated sorting and can switch to title sorting',
+      (WidgetTester tester) async {
+    final sortableUserAnimeList = UserAnimeListDTO(
+      data: [
+        buildUserAnimeData(
+          id: 1,
+          title: 'Zeta',
+          status: 'watching',
+          updatedAt: '2024-03-01T00:00:00+00:00',
+        ),
+        buildUserAnimeData(
+          id: 2,
+          title: 'Alpha',
+          status: 'watching',
+          updatedAt: '2024-02-01T00:00:00+00:00',
+        ),
+        buildUserAnimeData(
+          id: 3,
+          title: 'Middle',
+          status: 'watching',
+          updatedAt: '2024-01-01T00:00:00+00:00',
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => sortableUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Detail view'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final defaultOrder = tester
+        .widgetList<MyListDetailRow>(find.byType(MyListDetailRow))
+        .map((row) => row.userAnimeData.node.title)
+        .toList();
+
+    expect(defaultOrder, ['Zeta', 'Alpha', 'Middle']);
+
+    await tester.tap(find.text('Last updated'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Title').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final titleSortedOrder = tester
+        .widgetList<MyListDetailRow>(find.byType(MyListDetailRow))
+        .map((row) => row.userAnimeData.node.title)
+        .toList();
+
+    expect(titleSortedOrder, ['Alpha', 'Middle', 'Zeta']);
   });
 
   testWidgets('My List quick edit updates watched progress from a grid tile',

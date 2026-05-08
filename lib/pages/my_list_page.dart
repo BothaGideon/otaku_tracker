@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
@@ -20,12 +21,72 @@ class MyListPage extends ConsumerStatefulWidget {
 class _MyListPageState extends ConsumerState<MyListPage> {
   bool isLoading = false;
 
+  int _compareByLastUpdated(UserAnimeData a, UserAnimeData b) {
+    final first = DateTime.tryParse(a.listStatus.updatedAt ?? '');
+    final second = DateTime.tryParse(b.listStatus.updatedAt ?? '');
+
+    if (first == null && second == null) {
+      return a.node.title.toLowerCase().compareTo(b.node.title.toLowerCase());
+    }
+
+    if (first == null) {
+      return 1;
+    }
+
+    if (second == null) {
+      return -1;
+    }
+
+    return second.compareTo(first);
+  }
+
+  int _compareByTitle(UserAnimeData a, UserAnimeData b) {
+    return a.node.title.toLowerCase().compareTo(b.node.title.toLowerCase());
+  }
+
+  int _compareByScore(UserAnimeData a, UserAnimeData b) {
+    final scoreComparison = b.listStatus.score.compareTo(a.listStatus.score);
+
+    if (scoreComparison != 0) {
+      return scoreComparison;
+    }
+
+    return _compareByTitle(a, b);
+  }
+
+  int _compareByProgress(UserAnimeData a, UserAnimeData b) {
+    final progressComparison = b.listStatus.numEpisodesWatched.compareTo(
+      a.listStatus.numEpisodesWatched,
+    );
+
+    if (progressComparison != 0) {
+      return progressComparison;
+    }
+
+    return _compareByTitle(a, b);
+  }
+
+  int Function(UserAnimeData, UserAnimeData) _comparatorForSort(
+      MyListSortOption sortOption) {
+    switch (sortOption) {
+      case MyListSortOption.lastUpdated:
+        return _compareByLastUpdated;
+      case MyListSortOption.title:
+        return _compareByTitle;
+      case MyListSortOption.score:
+        return _compareByScore;
+      case MyListSortOption.progress:
+        return _compareByProgress;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final oauthService = ref.read(oauthProvider);
     final userDataAsync = ref.watch(userDataProvider);
     final selectedStatus = ref.watch(myListFilterProvider);
     final selectedViewMode = ref.watch(myListViewModeProvider);
+    final selectedSort = ref.watch(myListSortProvider);
 
     return userDataAsync.when(
       data: (userData) {
@@ -174,22 +235,56 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                               )
                               .toList(),
                         ),
-                        SegmentedButton<MyListViewMode>(
-                          segments: MyListViewMode.values
-                              .map(
-                                (viewMode) => ButtonSegment<MyListViewMode>(
-                                  value: viewMode,
-                                  label: Text(viewMode.label),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 180,
+                              child: DropdownButtonFormField<MyListSortOption>(
+                                initialValue: selectedSort,
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Sort',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
                                 ),
-                              )
-                              .toList(),
-                          selected: {selectedViewMode},
-                          onSelectionChanged: (selection) {
-                            if (selection.isNotEmpty) {
-                              ref.read(myListViewModeProvider.notifier).state =
-                                  selection.first;
-                            }
-                          },
+                                items: MyListSortOption.values
+                                    .map(
+                                      (sortOption) =>
+                                          DropdownMenuItem<MyListSortOption>(
+                                        value: sortOption,
+                                        child: Text(sortOption.label),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    ref.read(myListSortProvider.notifier).state =
+                                        value;
+                                  }
+                                },
+                              ),
+                            ),
+                            SegmentedButton<MyListViewMode>(
+                              segments: MyListViewMode.values
+                                  .map(
+                                    (viewMode) => ButtonSegment<MyListViewMode>(
+                                      value: viewMode,
+                                      label: Text(viewMode.label),
+                                    ),
+                                  )
+                                  .toList(),
+                              selected: {selectedViewMode},
+                              onSelectionChanged: (selection) {
+                                if (selection.isNotEmpty) {
+                                  ref.read(myListViewModeProvider.notifier).state =
+                                      selection.first;
+                                }
+                              },
+                            ),
+                          ],
                         ),
                       ];
 
@@ -209,7 +304,12 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                         children: [
                           Expanded(child: controls.first),
                           const SizedBox(width: 12),
-                          controls.last,
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: controls.last,
+                            ),
+                          ),
                         ],
                       );
                     },
@@ -228,8 +328,11 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                                   item.listStatus.status ==
                                   selectedStatus.apiValue)
                               .toList();
+                      final sortedList = [...filteredList];
 
-                      if (filteredList.isEmpty) {
+                      sortedList.sort(_comparatorForSort(selectedSort));
+
+                      if (sortedList.isEmpty) {
                         return Center(
                           child: Text(
                             'No titles in ${selectedStatus.label}',
@@ -239,11 +342,11 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                       }
 
                       if (selectedViewMode == MyListViewMode.detail) {
-                        return MyListDetailView(items: filteredList);
+                        return MyListDetailView(items: sortedList);
                       }
 
                       return GridView.builder(
-                          itemCount: filteredList.length,
+                          itemCount: sortedList.length,
                           gridDelegate:
                               const SliverGridDelegateWithMaxCrossAxisExtent(
                             maxCrossAxisExtent: 200.0,
@@ -252,7 +355,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                             childAspectRatio: 0.6,
                           ),
                           itemBuilder: (context, index) {
-                            final userAnimeData = filteredList[index];
+                            final userAnimeData = sortedList[index];
 
                             return KeyedSubtree(
                               key: ValueKey(userAnimeData.node.id),
