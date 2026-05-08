@@ -4,6 +4,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 
 class PosterImageTitle extends StatelessWidget {
+  static const int _titleMaxLines = 2;
+  static const double _titleHeight = 36.0;
+
   final Anime? anime;
   final String? userStatus;
   final num? userScore;
@@ -185,7 +188,7 @@ class PosterImageTitle extends StatelessWidget {
       builder: (context, constraints) {
         final hasBoundedHeight = constraints.hasBoundedHeight;
         final poster = hasBoundedHeight
-            ? Flexible(child: buildPosterImage())
+            ? Expanded(child: buildPosterImage())
             : SizedBox(
                 height: hasImage ? 260.0 : 244.0,
                 width: double.infinity,
@@ -197,12 +200,17 @@ class PosterImageTitle extends StatelessWidget {
             poster,
             if (showBottomTitle) ...[
               const SizedBox(height: 10.0),
-              Text(
-                titleToUse,
-                style:
-                    const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
+              SizedBox(
+                height: _titleHeight,
+                child: Text(
+                  titleToUse,
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: _titleMaxLines,
+                ),
               ),
             ],
           ],

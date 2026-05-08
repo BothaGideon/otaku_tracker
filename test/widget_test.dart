@@ -14,12 +14,12 @@ import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/content_preferences_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
-import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/services/nsfw_content_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
 import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
+import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/skeleton_box.dart';
@@ -1956,6 +1956,48 @@ void main() {
     expect(find.byType(SkeletonBox), findsOneWidget);
     expect(find.byIcon(Icons.image_not_supported), findsNothing);
     expect(find.text('Frieren'), findsOneWidget);
+  });
+
+  testWidgets('PosterImageTitle keeps the same poster height for one-line and two-line titles',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: Scaffold(
+          body: Row(
+            children: const [
+              Expanded(
+                child: SizedBox(
+                  height: 320,
+                  child: PosterImageTitle(
+                    imageUrl: 'https://cdn.example.com/short.jpg',
+                    title: 'Frieren',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SizedBox(
+                  height: 320,
+                  child: PosterImageTitle(
+                    imageUrl: 'https://cdn.example.com/long.jpg',
+                    title: 'A Very Long Anime Title That Should Wrap To Two Lines',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        overrides: const [],
+      ),
+    );
+    await tester.pump();
+
+    final firstPosterHeight =
+        tester.getSize(find.byType(NetworkImageSkeleton).at(0)).height;
+    final secondPosterHeight =
+        tester.getSize(find.byType(NetworkImageSkeleton).at(1)).height;
+
+    expect(firstPosterHeight, secondPosterHeight);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('PosterImageTitle fits bounded poster-only layouts without overflow',
