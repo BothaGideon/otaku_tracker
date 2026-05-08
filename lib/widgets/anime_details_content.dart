@@ -7,6 +7,7 @@ import 'package:otaku_tracker/providers/anime_list_provider.dart';
 import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/widgets/loading_skeletons.dart';
+import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 
 class AnimeDetailsContent extends StatelessWidget {
   final AnimeDetailsViewData details;
@@ -230,29 +231,13 @@ class AnimeDetailsHeroPoster extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
-      child: hasImage
-          ? Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              height: 260.0,
-              width: double.infinity,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 260.0,
-                  width: double.infinity,
-                  color: Colors.grey,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.image_not_supported),
-                );
-              },
-            )
-          : Container(
-              height: 260.0,
-              width: double.infinity,
-              color: Colors.grey,
-              alignment: Alignment.center,
-              child: const Icon(Icons.image_not_supported),
-            ),
+      child: SizedBox(
+        height: 260.0,
+        width: double.infinity,
+        child: NetworkImageSkeleton(
+          imageUrl: hasImage ? imageUrl : null,
+        ),
+      ),
     );
   }
 }
@@ -1165,29 +1150,17 @@ class AnimeDetailsRecommendationCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: recommendation.imageUrl.isNotEmpty
-                  ? Image.network(
-                      recommendation.imageUrl,
-                      height: 180,
-                      width: 140,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 180,
-                          width: 140,
-                          color: Colors.grey,
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.image_not_supported),
-                        );
-                      },
-                    )
-                  : Container(
-                      height: 180,
-                      width: 140,
-                      color: Colors.grey,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.image_not_supported),
-                    ),
+              child: SizedBox(
+                height: 180,
+                width: 140,
+                child: NetworkImageSkeleton(
+                  imageUrl:
+                      recommendation.imageUrl.isNotEmpty
+                          ? recommendation.imageUrl
+                          : null,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Expanded(

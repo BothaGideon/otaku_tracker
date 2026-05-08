@@ -19,6 +19,7 @@ import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
+import 'package:otaku_tracker/widgets/skeleton_box.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -1753,7 +1754,7 @@ void main() {
         findsOneWidget);
   });
 
-  testWidgets('PosterImageTitle shows the fallback state without an image',
+  testWidgets('PosterImageTitle shows a skeleton when no image is available',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       createTestApp(
@@ -1769,7 +1770,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byIcon(Icons.image_not_supported), findsOneWidget);
+    expect(find.byType(SkeletonBox), findsOneWidget);
+    expect(find.byIcon(Icons.image_not_supported), findsNothing);
     expect(find.text('Frieren'), findsOneWidget);
   });
 

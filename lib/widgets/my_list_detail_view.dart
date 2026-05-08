@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:otaku_tracker/constants/anime_navigation.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
 import 'package:otaku_tracker/widgets/my_list_anime_tile.dart';
+import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 
 class MyListDetailView extends StatelessWidget {
   final List<UserAnimeData> items;
@@ -88,27 +89,19 @@ class MyListDetailRow extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: node.mainPicture?.medium != null
-                    ? Image.network(
-                        node.mainPicture!.medium,
+                    ? NetworkImageSkeleton(
+                        imageUrl: node.mainPicture!.medium,
                         width: 72,
                         height: 100,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 72,
-                            height: 100,
-                            color: Colors.grey.shade300,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.image_not_supported),
-                          );
-                        },
+                        borderRadius: BorderRadius.circular(10),
                       )
-                    : Container(
+                    : const SizedBox(
                         width: 72,
                         height: 100,
-                        color: Colors.grey.shade300,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.image_not_supported),
+                        child: NetworkImageSkeleton(
+                          imageUrl: null,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
                       ),
               ),
               const SizedBox(width: 12),

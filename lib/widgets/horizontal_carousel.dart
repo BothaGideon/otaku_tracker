@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/constants/anime_navigation.dart';
+import 'package:otaku_tracker/widgets/network_image_skeleton.dart';
 
 import 'carousel_title_subtitle.dart';
 
@@ -54,19 +55,15 @@ class HorizontalCarousel extends StatelessWidget {
                     child: Column(
                       children: [
                         anime.imageUrl.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: FadeInImage.assetNetwork(
-                                  placeholder: 'assets/icons/logo_black.png',
-                                  image: anime.imageUrl,
-                                  fit: BoxFit.cover,
-                                  height: 204.0,
-                                ),
-                              )
-                            : Container(
+                            ? NetworkImageSkeleton(
+                                imageUrl: anime.imageUrl,
                                 height: 204.0,
-                                color: Colors.grey,
-                                child: const Icon(Icons.image_not_supported),
+                              )
+                            : const SizedBox(
+                                height: 204.0,
+                                child: NetworkImageSkeleton(
+                                  imageUrl: null,
+                                ),
                               ),
                         const SizedBox(height: 10.0),
                         Text(
