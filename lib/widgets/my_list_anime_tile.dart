@@ -358,7 +358,7 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                             _adjustWatchedEpisodes(-1);
                           }),
                     icon: const Icon(Icons.remove_rounded),
-                    label: const Text('-1 episode'),
+                    label: const Text('1 episode'),
                   ),
                   FilledButton.tonalIcon(
                     onPressed: isSaving || !canIncrementEpisodes
@@ -367,7 +367,7 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                             _adjustWatchedEpisodes(1);
                           }),
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('+1 episode'),
+                    label: const Text('1 episode'),
                   ),
                   OutlinedButton.icon(
                     onPressed: isSaving
