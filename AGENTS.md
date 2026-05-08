@@ -48,12 +48,19 @@ This file is for coding agents and LLM assistants working in this repository.
    - use Material 3 color roles, spacing, states, and feedback patterns instead of ad hoc styling choices
    - when choosing loading, empty, error, navigation, or interaction patterns, align them with Material 3 guidance unless the existing product intentionally differs
 
+7. Skeleton loading is mandatory for data-driven UI:
+   - every new widget or UI component that waits on async data, deferred provider state, or any user-visible loading period must include skeleton loading by default
+   - do not introduce new spinner-only or blank loading states for new UI work unless the user explicitly asks for a different pattern
+   - skeletons should match the final layout closely enough to preserve spacing and reduce layout shift
+   - when adding a new async surface, plan and implement loading, empty, error, and loaded states together
+
 ## Implementation Guidance
 
 - Read before editing.
 - If adding a new widget file, place it in `lib/widgets/` and match existing naming style.
 - Preserve current UI behavior unless the task explicitly asks for behavior changes.
 - For details-page work, keep API fetching in providers/pages, and keep display logic in widgets.
+- When adding new async UI, include the skeleton widget(s) in the same change rather than deferring loading-state work.
 
 ## Verification Rules
 
@@ -103,6 +110,7 @@ This file is for coding agents and LLM assistants working in this repository.
 - For any changes that affect the data model or API interactions, plan how the data will be fetched, stored, and passed to the UI, ensuring that it follows the existing patterns in the codebase and does not introduce unnecessary complexity.
 - When planning, also consider how the changes will be tested, and ensure that there are clear test cases for both the happy path and any edge cases or error states that may arise from the new implementation.
 - For any new widgets or UI components, plan the styling and layout, ensuring that it is consistent with the existing design language of the app and provides a cohesive user experience.
+- For any new widgets or UI components that depend on loading or deferred data, plan the skeleton state up front and treat it as a required deliverable, not an optional enhancement.
 - When planning, also consider the performance implications of the changes, and ensure that any new features or UI components are optimized for smooth performance, especially on lower-end devices or in scenarios with limited resources.
 - For any changes that involve navigation or user flow, plan how the user will move through the app, and ensure that the navigation is intuitive and follows established patterns in the app, providing a seamless experience for the user.
 - When planning, also consider how the changes will affect the overall architecture of the app, and ensure that they fit well within the existing structure and do not introduce unnecessary coupling or complexity, while still achieving the desired functionality and user experience.
