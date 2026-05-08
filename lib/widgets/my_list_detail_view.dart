@@ -15,16 +15,10 @@ class MyListDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      itemCount: items.length + 1,
-      separatorBuilder: (context, index) => index == 0
-          ? const SizedBox(height: 8)
-          : const SizedBox(height: 10),
+      itemCount: items.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return const _MyListDetailHeader();
-        }
-
-        final userAnimeData = items[index - 1];
+        final userAnimeData = items[index];
 
         return MyListDetailRow(
           key: ValueKey(userAnimeData.node.id),
@@ -157,49 +151,6 @@ class MyListDetailRow extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _MyListDetailHeader extends StatelessWidget {
-  const _MyListDetailHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 8,
-        children: [
-          Text(
-            'Title',
-            style: textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            'Status',
-            style: textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            'Progress',
-            style: textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            'Score',
-            style: textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
       ),
     );
   }

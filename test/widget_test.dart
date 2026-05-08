@@ -470,7 +470,7 @@ void main() {
     final avatar = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
     expect(avatar.pictureUrl,
         'https://cdn.myanimelist.net/images/userimages/1.jpg');
-    expect(find.text('List controls'), findsOneWidget);
+    expect(find.text('Selected filters'), findsOneWidget);
     expect(find.text('All • Last updated • Poster view'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Filter & sort'), findsOneWidget);
   });
@@ -600,7 +600,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(MyListDetailView), findsOneWidget);
-    expect(find.text('Title'), findsOneWidget);
     expect(find.text('Progress'), findsWidgets);
     expect(find.text('3 / 24'), findsOneWidget);
     expect(find.text('9 / 10'), findsOneWidget);
