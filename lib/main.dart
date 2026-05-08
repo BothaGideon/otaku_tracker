@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:otaku_tracker/pages/landing_page.dart';
-import 'package:otaku_tracker/pages/my_list_page.dart';
-import 'package:otaku_tracker/pages/seasonal_page.dart';
-import 'package:otaku_tracker/providers/gorouter_provider.dart';
-import 'package:otaku_tracker/providers/navigation_index_provider.dart';
-import 'package:otaku_tracker/services/deeplink_service.dart';
-import 'package:otaku_tracker/widgets/global_navigation_bar.dart';
+import 'package:otaku_tracker/pages/home/landing_page.dart';
+import 'package:otaku_tracker/pages/my_list/my_list_page.dart';
+import 'package:otaku_tracker/pages/seasonal/seasonal_page.dart';
+import 'package:otaku_tracker/providers/navigation/gorouter_provider.dart';
+import 'package:otaku_tracker/providers/navigation/navigation_index_provider.dart';
+import 'package:otaku_tracker/services/navigation/deeplink_service.dart';
+import 'package:otaku_tracker/widgets/shared/app/global_navigation_bar.dart';
 
 void main() {
   runApp(const ProviderScope(
