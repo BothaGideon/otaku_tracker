@@ -218,13 +218,16 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                   selectedStatus: selectedStatus,
                   selectedSort: selectedSort,
                   selectedViewMode: selectedViewMode,
-                  onApply: (selection) {
-                    ref.read(myListFilterProvider.notifier).state =
-                        selection.status;
-                    ref.read(myListSortProvider.notifier).state =
-                        selection.sort;
-                    ref.read(myListViewModeProvider.notifier).state =
-                        selection.viewMode;
+                  onApply: (selection) async {
+                    await ref.read(myListFilterProvider.notifier).setFilter(
+                          selection.status,
+                        );
+                    await ref.read(myListSortProvider.notifier).setSort(
+                          selection.sort,
+                        );
+                    await ref.read(myListViewModeProvider.notifier).setViewMode(
+                          selection.viewMode,
+                        );
                   },
                 ),
                 Expanded(

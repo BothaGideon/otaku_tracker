@@ -9,6 +9,7 @@ import 'package:otaku_tracker/pages/landing_page.dart';
 import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
+import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
@@ -16,6 +17,7 @@ import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
 import 'package:otaku_tracker/widgets/my_list_detail_view.dart';
 import 'package:otaku_tracker/widgets/poster_image_title.dart';
 import 'package:otaku_tracker/widgets/user_avatar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget createTestApp({
   required List overrides,
@@ -350,6 +352,10 @@ Recommendation buildRecommendation({
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   final fakeUserAnimeList = UserAnimeListDTO(
     data: [
       buildUserAnimeData(
@@ -746,6 +752,87 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('All • Last updated • Poster view'), findsOneWidget);
+  });
+
+  testWidgets('My List saves selected controls to local preferences',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Filter & sort'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Completed').last);
+    await tester.pump();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Title').last);
+    await tester.pump();
+    await tester.ensureVisible(find.text('Detail view').last);
+    await tester.tap(find.text('Detail view').last);
+    await tester.pump();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.pumpAndSettle();
+
+    final prefs = await SharedPreferences.getInstance();
+
+    expect(
+      prefs.getString('my_list_status_filter'),
+      MyListStatusFilter.completed.name,
+    );
+    expect(
+      prefs.getString('my_list_sort'),
+      MyListSortOption.title.name,
+    );
+    expect(
+      prefs.getString('my_list_view_mode'),
+      MyListViewMode.detail.name,
+    );
+  });
+
+  testWidgets('My List restores saved controls from local preferences on startup',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({
+      'my_list_status_filter': MyListStatusFilter.completed.name,
+      'my_list_sort': MyListSortOption.title.name,
+      'my_list_view_mode': MyListViewMode.detail.name,
+    });
+
+    await tester.pumpWidget(
+      createTestApp(
+        overrides: [
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': 'lumen',
+              'accessToken': 'token',
+              'picture': null,
+            },
+          ),
+          userAnimeListProvider.overrideWith((ref) async => fakeUserAnimeList),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Completed • Title • Detail view'), findsOneWidget);
+    expect(find.byType(MyListDetailView), findsOneWidget);
+    expect(find.text('Cowboy Bebop'), findsOneWidget);
+    expect(find.text('Frieren'), findsNothing);
   });
 
   testWidgets('My List quick edit updates watched progress from a grid tile',

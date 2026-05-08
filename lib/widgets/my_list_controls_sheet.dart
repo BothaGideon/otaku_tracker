@@ -5,7 +5,7 @@ class MyListControlsBar extends StatelessWidget {
   final MyListStatusFilter selectedStatus;
   final MyListSortOption selectedSort;
   final MyListViewMode selectedViewMode;
-  final ValueChanged<MyListControlsSelection> onApply;
+  final Future<void> Function(MyListControlsSelection selection) onApply;
 
   const MyListControlsBar({
     super.key,
@@ -47,7 +47,7 @@ class MyListControlsBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'List controls',
+                  'Selected filters',
                   style: theme.textTheme.titleSmall,
                 ),
                 const SizedBox(height: 2),
@@ -76,7 +76,7 @@ class MyListControlsSheet extends StatefulWidget {
   final MyListStatusFilter initialStatus;
   final MyListSortOption initialSort;
   final MyListViewMode initialViewMode;
-  final ValueChanged<MyListControlsSelection> onApply;
+  final Future<void> Function(MyListControlsSelection selection) onApply;
 
   const MyListControlsSheet({
     super.key,
@@ -111,14 +111,18 @@ class _MyListControlsSheetState extends State<MyListControlsSheet> {
     });
   }
 
-  void _apply() {
-    widget.onApply(
+  Future<void> _apply() async {
+    await widget.onApply(
       MyListControlsSelection(
         status: selectedStatus,
         sort: selectedSort,
         viewMode: selectedViewMode,
       ),
     );
+
+    if (!mounted) {
+      return;
+    }
 
     Navigator.of(context).pop();
   }
