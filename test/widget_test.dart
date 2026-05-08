@@ -1341,4 +1341,31 @@ void main() {
     expect(find.byIcon(Icons.image_not_supported), findsOneWidget);
     expect(find.text('Frieren'), findsOneWidget);
   });
+
+  testWidgets('PosterImageTitle fits bounded poster-only layouts without overflow',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      createTestApp(
+        child: const Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 196,
+              height: 256.7,
+              child: PosterImageTitle(
+                imageUrl: 'https://cdn.example.com/frieren.jpg',
+                title: 'Frieren',
+                userStatus: 'watching',
+                userScore: 9,
+                showBottomTitle: false,
+              ),
+            ),
+          ),
+        ),
+        overrides: const [],
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
