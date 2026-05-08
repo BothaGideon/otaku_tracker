@@ -36,17 +36,20 @@ class HorizontalCarouselSkeleton extends StatelessWidget {
         const SizedBox(
           height: 16.0,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SkeletonBox(width: 150, height: 24),
-              if (showSubtitle) ...[
-                const SizedBox(height: 8),
-                const SkeletonBox(width: 96, height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SkeletonBox(width: 150, height: 24),
+                if (showSubtitle) ...[
+                  const SizedBox(height: 8),
+                  const SkeletonBox(width: 96, height: 16),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         const SizedBox(
@@ -184,6 +187,8 @@ class MyProfilePageSkeleton extends StatelessWidget {
         _ProfileHeaderSkeleton(),
         SizedBox(height: 16),
         _ProfileJourneySkeleton(),
+        SizedBox(height: 16),
+        _ProfileSettingsSkeleton(),
         SizedBox(height: 16),
         _ProfileDisclaimerSkeleton(),
         SizedBox(height: 24),
@@ -536,6 +541,31 @@ class _ProfileDisclaimerSkeleton extends StatelessWidget {
             SkeletonBox(width: double.infinity, height: 16),
             SizedBox(height: 8),
             SkeletonBox(width: 300, height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSettingsSkeleton extends StatelessWidget {
+  const _ProfileSettingsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      child: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonBox(width: 150, height: 20),
+            SizedBox(height: 8),
+            SkeletonBox(width: double.infinity, height: 16),
+            SizedBox(height: 8),
+            SkeletonBox(width: 320, height: 16),
+            SizedBox(height: 16),
+            SkeletonBox(width: double.infinity, height: 56),
           ],
         ),
       ),

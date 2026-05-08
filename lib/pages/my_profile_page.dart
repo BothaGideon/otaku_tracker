@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
+import 'package:otaku_tracker/providers/content_preferences_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/widgets/loading_error_state.dart';
 import 'package:otaku_tracker/widgets/loading_skeletons.dart';
@@ -16,6 +17,42 @@ class MyProfilePage extends ConsumerStatefulWidget {
 
 class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   bool isLoggingOut = false;
+
+  Widget _buildContentPreferencesCard(bool showNsfwContent) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Content preferences',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose whether Otaku Tracker should fetch and display NSFW anime results in search, browsing, and detail views on this device.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Show NSFW content'),
+              subtitle: Text(
+                showNsfwContent
+                    ? 'NSFW anime can appear in supported app surfaces.'
+                    : 'NSFW anime is hidden where the app can filter it.',
+              ),
+              value: showNsfwContent,
+              onChanged: (value) {
+                ref.read(nsfwPreferenceProvider.notifier).setEnabled(value);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _handleLogout() async {
     final shouldLogout = await showDialog<bool>(
@@ -86,6 +123,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final showNsfwContent = ref.watch(nsfwPreferenceProvider);
 
     return Scaffold(
       appBar: const OtakuTrackerAppBar(
@@ -100,18 +138,28 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
               profileData['animeStatistics'] as Map<String, num?>?;
 
           if (username == null) {
-            return const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  UserAvatar(radius: 36.0, iconSize: 48.0),
-                  SizedBox(height: 16),
-                  Text(
-                    'Please sign in from My List to view your profile.',
-                    textAlign: TextAlign.center,
+            return ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        UserAvatar(radius: 36.0, iconSize: 48.0),
+                        SizedBox(height: 16),
+                        Text(
+                          'Please sign in from My List to view your profile.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                _buildContentPreferencesCard(showNsfwContent),
+              ],
             );
           }
 
@@ -144,6 +192,8 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              _buildContentPreferencesCard(showNsfwContent),
               const SizedBox(height: 16),
               Card(
                 child: Padding(
@@ -310,7 +360,7 @@ class _MyProfilePageState extends ConsumerState<MyProfilePage> {
                     const SizedBox(height: 8),
                     Text(
                       'Need to switch accounts or disconnect this device? Logging out clears your saved MyAnimeList session from Otaku Tracker.',
-                      style: Theme.of(context).textTheme.bodyMedium
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
                     Align(

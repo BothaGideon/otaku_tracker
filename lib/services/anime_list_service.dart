@@ -64,9 +64,13 @@ class AnimeListStatusUpdate {
 class AnimeListService {
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
-  Future<AnimeDTO> searchAnime(String query, {int limit = 30}) async {
+  Future<AnimeDTO> searchAnime(
+    String query, {
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return _fetchAnimeCollection(
-      'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit&fields=mean,num_scoring_users',
+      'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       errorPrefix: 'Failed to search anime',
     );
   }
@@ -171,23 +175,32 @@ class AnimeListService {
     );
   }
 
-  Future<AnimeDTO> getTopAnime({int limit = 30}) async {
+  Future<AnimeDTO> getTopAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return _fetchAnimeCollection(
-      'https://api.myanimelist.net/v2/anime/ranking?ranking_type=bypopularity&limit=$limit&fields=mean,num_scoring_users',
+      'https://api.myanimelist.net/v2/anime/ranking?ranking_type=bypopularity&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       errorPrefix: 'Failed to load top anime',
     );
   }
 
-  Future<AnimeDTO> getTopRatedAnime({int limit = 30}) async {
+  Future<AnimeDTO> getTopRatedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return _fetchAnimeCollection(
-      'https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=$limit&fields=mean,num_scoring_users',
+      'https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       errorPrefix: 'Failed to load top rated anime',
     );
   }
 
-  Future<AnimeDTO> getRecentlyAddedAnime({int limit = 30}) async {
+  Future<AnimeDTO> getRecentlyAddedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return _fetchAnimeCollection(
-      'https://api.myanimelist.net/v2/anime?q=a&limit=$limit&order_by=id&sort=desc&fields=mean,num_scoring_users',
+      'https://api.myanimelist.net/v2/anime?q=a&limit=$limit&order_by=id&sort=desc&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       errorPrefix: 'Failed to load recently added anime',
     );
   }

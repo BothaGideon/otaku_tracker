@@ -2,9 +2,11 @@ import 'package:jikan_api/jikan_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otaku_tracker/constants/anime_seasons_helper.dart';
 import 'package:otaku_tracker/models/response/anime.dart';
+import 'package:otaku_tracker/providers/content_preferences_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
 import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
+import 'package:otaku_tracker/services/nsfw_content_service.dart';
 
 final animeListServiceProvider = Provider<AnimeListService>((ref) {
   return AnimeListService();
@@ -12,6 +14,7 @@ final animeListServiceProvider = Provider<AnimeListService>((ref) {
 
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   final jikan = Jikan();
+  final includeNsfw = ref.watch(nsfwPreferenceProvider);
   final season = AnimeSeasonsHelper().getCurrentSeason();
   final previousSeason = AnimeSeasonsHelper().getPreviousSeason();
   final upcomingSeasonDate = AnimeSeasonsHelper().getUpcomingSeason();
@@ -33,12 +36,30 @@ final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
   //most popular
   final mostPopular = await jikan.getTopAnime(filter: TopFilter.bypopularity);
 
-  final currentSeasonList = currentSeason.toList();
-  final previousSeasonList = previousSeasonJ.toList();
-  final upcomingSeasonList = upcomingSeason.toList();
-  final mostPopularList = mostPopular.toList();
-  final topUpcomingList = topUpcoming.toList();
-  final topAiringList = topAiring.toList();
+  final currentSeasonList = filterAnimeByNsfwPreference(
+    currentSeason.toList(),
+    includeNsfw: includeNsfw,
+  );
+  final previousSeasonList = filterAnimeByNsfwPreference(
+    previousSeasonJ.toList(),
+    includeNsfw: includeNsfw,
+  );
+  final upcomingSeasonList = filterAnimeByNsfwPreference(
+    upcomingSeason.toList(),
+    includeNsfw: includeNsfw,
+  );
+  final mostPopularList = filterAnimeByNsfwPreference(
+    mostPopular.toList(),
+    includeNsfw: includeNsfw,
+  );
+  final topUpcomingList = filterAnimeByNsfwPreference(
+    topUpcoming.toList(),
+    includeNsfw: includeNsfw,
+  );
+  final topAiringList = filterAnimeByNsfwPreference(
+    topAiring.toList(),
+    includeNsfw: includeNsfw,
+  );
 
   return CombinedData(
       currentSeasonAnimeList: currentSeasonList,
@@ -191,6 +212,7 @@ class AnimeListMutationController {
 
 final animeSearchProvider =
     FutureProvider.autoDispose.family<List<AnimeData>, String>((ref, query) async {
+  final includeNsfw = ref.watch(nsfwPreferenceProvider);
   final trimmedQuery = query.trim();
 
   if (trimmedQuery.isEmpty) {
@@ -198,7 +220,10 @@ final animeSearchProvider =
   }
 
   final service = ref.read(animeListServiceProvider);
-  final results = await service.searchAnime(trimmedQuery);
+  final results = await service.searchAnime(
+    trimmedQuery,
+    includeNsfw: includeNsfw,
+  );
   return results.data;
 });
 
@@ -213,15 +238,17 @@ final animeSearchQuickFilterProvider =
       ref,
       filter,
     ) async {
+      final includeNsfw = ref.watch(nsfwPreferenceProvider);
       final service = ref.read(animeListServiceProvider);
 
       switch (filter) {
         case AnimeSearchQuickFilter.topAnime:
-          return (await service.getTopAnime()).data;
+          return (await service.getTopAnime(includeNsfw: includeNsfw)).data;
         case AnimeSearchQuickFilter.topRated:
-          return (await service.getTopRatedAnime()).data;
+          return (await service.getTopRatedAnime(includeNsfw: includeNsfw)).data;
         case AnimeSearchQuickFilter.recentlyAdded:
-          return (await service.getRecentlyAddedAnime()).data;
+          return (await service.getRecentlyAddedAnime(includeNsfw: includeNsfw))
+              .data;
       }
     });
 
@@ -238,7 +265,12 @@ class AnimeDetailsData {
 final animeDetailsProvider =
     FutureProvider.autoDispose.family<AnimeDetailsData, int>((ref, animeId) async {
   final jikan = Jikan();
+  final includeNsfw = ref.watch(nsfwPreferenceProvider);
   final anime = await jikan.getAnime(animeId);
+  ensureAnimeAllowedByNsfwPreference(
+    anime,
+    includeNsfw: includeNsfw,
+  );
   final recommendations = await jikan.getAnimeRecommendations(animeId);
 
   return AnimeDetailsData(

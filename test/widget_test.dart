@@ -11,9 +11,12 @@ import 'package:otaku_tracker/pages/landing_page.dart';
 import 'package:otaku_tracker/pages/my_list_page.dart';
 import 'package:otaku_tracker/pages/my_profile_page.dart';
 import 'package:otaku_tracker/providers/anime_list_provider.dart';
+import 'package:otaku_tracker/providers/content_preferences_provider.dart';
 import 'package:otaku_tracker/providers/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/oauth_provider.dart';
+import 'package:otaku_tracker/services/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/anime_list_service.dart';
+import 'package:otaku_tracker/services/nsfw_content_service.dart';
 import 'package:otaku_tracker/services/oauth_service.dart';
 import 'package:otaku_tracker/widgets/loading_skeletons.dart';
 import 'package:otaku_tracker/widgets/my_list_controls_sheet.dart';
@@ -100,7 +103,11 @@ AnimeData buildSearchAnimeData({
 
 class FakeAnimeListService extends AnimeListService {
   @override
-  Future<AnimeDTO> searchAnime(String query, {int limit = 30}) async {
+  Future<AnimeDTO> searchAnime(
+    String query, {
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     if (query.toLowerCase().contains('steins')) {
       return AnimeDTO(
         data: [
@@ -118,7 +125,10 @@ class FakeAnimeListService extends AnimeListService {
   }
 
   @override
-  Future<AnimeDTO> getTopAnime({int limit = 30}) async {
+  Future<AnimeDTO> getTopAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return AnimeDTO(
       data: [
         buildSearchAnimeData(
@@ -132,7 +142,10 @@ class FakeAnimeListService extends AnimeListService {
   }
 
   @override
-  Future<AnimeDTO> getTopRatedAnime({int limit = 30}) async {
+  Future<AnimeDTO> getTopRatedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return AnimeDTO(
       data: [
         buildSearchAnimeData(
@@ -146,7 +159,10 @@ class FakeAnimeListService extends AnimeListService {
   }
 
   @override
-  Future<AnimeDTO> getRecentlyAddedAnime({int limit = 30}) async {
+  Future<AnimeDTO> getRecentlyAddedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
     return AnimeDTO(
       data: [
         buildSearchAnimeData(
@@ -156,6 +172,37 @@ class FakeAnimeListService extends AnimeListService {
           numScoringUsers: 12450,
         ),
       ],
+    );
+  }
+}
+
+class RecordingNsfwAnimeListService extends FakeAnimeListService {
+  bool? lastSearchIncludeNsfw;
+  bool? lastTopAnimeIncludeNsfw;
+
+  @override
+  Future<AnimeDTO> searchAnime(
+    String query, {
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
+    lastSearchIncludeNsfw = includeNsfw;
+    return super.searchAnime(
+      query,
+      limit: limit,
+      includeNsfw: includeNsfw,
+    );
+  }
+
+  @override
+  Future<AnimeDTO> getTopAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) async {
+    lastTopAnimeIncludeNsfw = includeNsfw;
+    return super.getTopAnime(
+      limit: limit,
+      includeNsfw: includeNsfw,
     );
   }
 }
@@ -241,23 +288,53 @@ class DelayedAnimeListService extends FakeAnimeListService {
   final Future<AnimeDTO>? _recentlyAddedAnimeFuture;
 
   @override
-  Future<AnimeDTO> searchAnime(String query, {int limit = 30}) {
-    return _searchFuture ?? super.searchAnime(query, limit: limit);
+  Future<AnimeDTO> searchAnime(
+    String query, {
+    int limit = 30,
+    bool includeNsfw = false,
+  }) {
+    return _searchFuture ??
+        super.searchAnime(
+          query,
+          limit: limit,
+          includeNsfw: includeNsfw,
+        );
   }
 
   @override
-  Future<AnimeDTO> getTopAnime({int limit = 30}) {
-    return _topAnimeFuture ?? super.getTopAnime(limit: limit);
+  Future<AnimeDTO> getTopAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) {
+    return _topAnimeFuture ??
+        super.getTopAnime(
+          limit: limit,
+          includeNsfw: includeNsfw,
+        );
   }
 
   @override
-  Future<AnimeDTO> getTopRatedAnime({int limit = 30}) {
-    return _topRatedAnimeFuture ?? super.getTopRatedAnime(limit: limit);
+  Future<AnimeDTO> getTopRatedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) {
+    return _topRatedAnimeFuture ??
+        super.getTopRatedAnime(
+          limit: limit,
+          includeNsfw: includeNsfw,
+        );
   }
 
   @override
-  Future<AnimeDTO> getRecentlyAddedAnime({int limit = 30}) {
-    return _recentlyAddedAnimeFuture ?? super.getRecentlyAddedAnime(limit: limit);
+  Future<AnimeDTO> getRecentlyAddedAnime({
+    int limit = 30,
+    bool includeNsfw = false,
+  }) {
+    return _recentlyAddedAnimeFuture ??
+        super.getRecentlyAddedAnime(
+          limit: limit,
+          includeNsfw: includeNsfw,
+        );
   }
 }
 
@@ -331,6 +408,8 @@ Anime buildAnimeDetails({
   required int id,
   required String title,
   String? synopsis,
+  String rating = 'PG-13',
+  bool hasExplicitGenre = false,
 }) {
   return Anime((b) => b
     ..malId = id
@@ -349,7 +428,7 @@ Anime buildAnimeDetails({
     ..background = 'Background information for $title.'
     ..season = 'fall'
     ..year = 2023
-    ..rating = 'PG-13'
+    ..rating = rating
     ..source = 'Light novel'
     ..duration = '24 min per ep'
     ..studios.add(Meta((b) => b
@@ -369,6 +448,17 @@ Anime buildAnimeDetails({
         ..name = 'Drama'
         ..url = 'https://example.com/genres/3'),
     ])
+    ..explicitGenres.addAll(
+      hasExplicitGenre
+          ? [
+              Meta((b) => b
+                ..malId = 99
+                ..type = 'anime'
+                ..name = 'Hentai'
+                ..url = 'https://example.com/genres/99'),
+            ]
+          : const [],
+    )
     ..relations.add(Relation((b) => b
       ..relation = 'Sequel'
       ..entry.add(Meta((b) => b
@@ -1557,6 +1647,41 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
+  testWidgets('My Profile persists the NSFW toggle even while logged out',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const MyProfilePage(),
+        overrides: [
+          currentUserProfileProvider.overrideWith(
+            (ref) async => {
+              'username': null,
+              'accessToken': null,
+              'picture': null,
+              'animeStatistics': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Content preferences'), findsOneWidget);
+    expect(find.text('Show NSFW content'), findsOneWidget);
+    expect(find.text('NSFW anime is hidden where the app can filter it.'),
+        findsOneWidget);
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool('show_nsfw_content'), isTrue);
+    expect(find.text('NSFW anime can appear in supported app surfaces.'),
+        findsOneWidget);
+  });
+
   testWidgets('AnimeDetailsPage shows a page skeleton while details are loading',
       (WidgetTester tester) async {
     final detailsCompleter = Completer<AnimeDetailsData>();
@@ -1582,6 +1707,44 @@ void main() {
 
     expect(find.byType(AnimeDetailsPageSkeleton), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  test('NSFW content service blocks explicit and Rx-rated anime when disabled',
+      () {
+    final explicitAnime = buildAnimeDetails(
+      id: 7,
+      title: 'Explicit Title',
+      hasExplicitGenre: true,
+    );
+    final rxAnime = buildAnimeDetails(
+      id: 8,
+      title: 'Rx Title',
+      rating: 'Rx - Hentai',
+    );
+
+    expect(isNsfwAnime(explicitAnime), isTrue);
+    expect(isNsfwAnime(rxAnime), isTrue);
+    expect(
+      () => ensureAnimeAllowedByNsfwPreference(
+        explicitAnime,
+        includeNsfw: false,
+      ),
+      throwsA(isA<NsfwContentHiddenException>()),
+    );
+    expect(
+      () => ensureAnimeAllowedByNsfwPreference(
+        rxAnime,
+        includeNsfw: false,
+      ),
+      throwsA(isA<NsfwContentHiddenException>()),
+    );
+    expect(
+      () => ensureAnimeAllowedByNsfwPreference(
+        explicitAnime,
+        includeNsfw: true,
+      ),
+      returnsNormally,
+    );
   });
 
   testWidgets('Anime details shows an add-to-list action when the title is not tracked',
@@ -1719,6 +1882,26 @@ void main() {
 
     expect(recordingService.lastDeletedAnimeId, 1);
     expect(refreshedList.data, isEmpty);
+  });
+
+  test('anime search providers pass the NSFW preference to MAL-backed requests',
+      () async {
+    final recordingService = RecordingNsfwAnimeListService();
+    final container = ProviderContainer(
+      overrides: [
+        animeListServiceProvider.overrideWith((ref) => recordingService),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(nsfwPreferenceProvider.notifier).setEnabled(true);
+    await container.read(animeSearchProvider('steins').future);
+    await container.read(
+      animeSearchQuickFilterProvider(AnimeSearchQuickFilter.topAnime).future,
+    );
+
+    expect(recordingService.lastSearchIncludeNsfw, isTrue);
+    expect(recordingService.lastTopAnimeIncludeNsfw, isTrue);
   });
 
   testWidgets('tapping an anime from My List opens the details page',
