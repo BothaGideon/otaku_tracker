@@ -65,20 +65,30 @@ class MyListAnimeTile extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 10.0),
-        Text(
-          node.title,
-          style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
+        const SizedBox(height: 6.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                node.title,
+                style: const TextStyle(
+                    fontSize: 14.0, fontWeight: FontWeight.w700),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                _episodesLabel(),
+                style: Theme.of(context).textTheme.bodySmall,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          _episodesLabel(),
-          style: Theme.of(context).textTheme.bodySmall,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
+        const SizedBox(height: 4.0),
       ],
     );
   }
@@ -162,8 +172,7 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
       return;
     }
 
-    final watchedEpisodes =
-        int.parse(watchedEpisodesController.text.trim());
+    final watchedEpisodes = int.parse(watchedEpisodesController.text.trim());
 
     setState(() {
       isSaving = true;
@@ -319,9 +328,8 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: isSaving
-                          ? null
-                          : () => Navigator.of(context).pop(),
+                      onPressed:
+                          isSaving ? null : () => Navigator.of(context).pop(),
                       child: const Text('Cancel'),
                     ),
                   ),
