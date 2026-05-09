@@ -15,6 +15,7 @@ class MyListDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       itemCount: items.length,
       separatorBuilder: (context, index) => const SizedBox(height: 10),

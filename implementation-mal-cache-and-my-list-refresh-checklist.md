@@ -1,0 +1,4 @@
+- [x] Add shared MAL GET cache infrastructure with a 15 minute TTL
+- [x] Wire MAL anime list service reads through the shared cache
+- [x] Add a cache-bypass refresh path for the My List screen
+- [x] Verify analyze and relevant tests pass

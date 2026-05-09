@@ -23,6 +23,43 @@ class MyListPage extends ConsumerStatefulWidget {
 class _MyListPageState extends ConsumerState<MyListPage> {
   bool isLoading = false;
 
+  Future<void> _refreshMyList() async {
+    final accessToken = await ref.read(oauthProvider).getAccessToken();
+
+    if (accessToken == null) {
+      ref.invalidate(userAnimeListProvider);
+      return;
+    }
+
+    final animeListService = ref.read(animeListServiceProvider);
+    animeListService.invalidateUserAnimeList(accessToken);
+    ref.invalidate(userAnimeListProvider);
+    await ref.read(userAnimeListProvider.future);
+  }
+
+  Widget _buildCenteredRefreshableState({
+    required Widget child,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          onRefresh: _refreshMyList,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: constraints.maxHeight,
+                child: Center(
+                  child: child,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   int _compareByLastUpdated(UserAnimeData a, UserAnimeData b) {
     final first = DateTime.tryParse(a.listStatus.updatedAt ?? '');
     final second = DateTime.tryParse(b.listStatus.updatedAt ?? '');
@@ -249,7 +286,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                       sortedList.sort(_comparatorForSort(selectedSort));
 
                       if (sortedList.isEmpty) {
-                        return Center(
+                        return _buildCenteredRefreshableState(
                           child: Text(
                             'No titles in ${selectedStatus.label}',
                             textAlign: TextAlign.center,
@@ -258,28 +295,35 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                       }
 
                       if (selectedViewMode == MyListViewMode.detail) {
-                        return MyListDetailView(items: sortedList);
+                        return RefreshIndicator(
+                          onRefresh: _refreshMyList,
+                          child: MyListDetailView(items: sortedList),
+                        );
                       }
 
-                      return GridView.builder(
-                          itemCount: sortedList.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200.0,
-                            mainAxisSpacing: 10.0,
-                            crossAxisSpacing: 10.0,
-                            childAspectRatio: 0.6,
-                          ),
-                          itemBuilder: (context, index) {
-                            final userAnimeData = sortedList[index];
+                      return RefreshIndicator(
+                        onRefresh: _refreshMyList,
+                        child: GridView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: sortedList.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200.0,
+                              mainAxisSpacing: 10.0,
+                              crossAxisSpacing: 10.0,
+                              childAspectRatio: 0.6,
+                            ),
+                            itemBuilder: (context, index) {
+                              final userAnimeData = sortedList[index];
 
-                            return KeyedSubtree(
-                              key: ValueKey(userAnimeData.node.id),
-                              child: MyListAnimeTile(
-                                userAnimeData: userAnimeData,
-                              ),
-                            );
-                          });
+                              return KeyedSubtree(
+                                key: ValueKey(userAnimeData.node.id),
+                                child: MyListAnimeTile(
+                                  userAnimeData: userAnimeData,
+                                ),
+                              );
+                            }),
+                      );
                     },
                     loading: () {
                       if (selectedViewMode == MyListViewMode.detail) {
@@ -288,10 +332,10 @@ class _MyListPageState extends ConsumerState<MyListPage> {
 
                       return const MyListPosterGridSkeleton();
                     },
-                    error: (error, stack) => LoadingErrorState(
-                      onRetry: () {
-                        // Retry logic if needed
-                      },
+                    error: (error, stack) => _buildCenteredRefreshableState(
+                      child: LoadingErrorState(
+                        onRetry: () => _refreshMyList(),
+                      ),
                     ),
                   ),
                 ),

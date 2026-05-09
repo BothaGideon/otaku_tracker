@@ -107,6 +107,7 @@ class FakeAnimeListService extends AnimeListService {
     String query, {
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     if (query.toLowerCase().contains('steins')) {
       return AnimeDTO(
@@ -128,6 +129,7 @@ class FakeAnimeListService extends AnimeListService {
   Future<AnimeDTO> getTopAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     return AnimeDTO(
       data: [
@@ -145,6 +147,7 @@ class FakeAnimeListService extends AnimeListService {
   Future<AnimeDTO> getTopRatedAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     return AnimeDTO(
       data: [
@@ -162,6 +165,7 @@ class FakeAnimeListService extends AnimeListService {
   Future<AnimeDTO> getRecentlyAddedAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     return AnimeDTO(
       data: [
@@ -185,12 +189,14 @@ class RecordingNsfwAnimeListService extends FakeAnimeListService {
     String query, {
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     lastSearchIncludeNsfw = includeNsfw;
     return super.searchAnime(
       query,
       limit: limit,
       includeNsfw: includeNsfw,
+      forceRefresh: forceRefresh,
     );
   }
 
@@ -198,11 +204,13 @@ class RecordingNsfwAnimeListService extends FakeAnimeListService {
   Future<AnimeDTO> getTopAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) async {
     lastTopAnimeIncludeNsfw = includeNsfw;
     return super.getTopAnime(
       limit: limit,
       includeNsfw: includeNsfw,
+      forceRefresh: forceRefresh,
     );
   }
 }
@@ -216,7 +224,10 @@ class RecordingAnimeListService extends FakeAnimeListService {
   int? lastDeletedAnimeId;
 
   @override
-  Future<UserAnimeListDTO> getUserAnimeList(String accessToken) async {
+  Future<UserAnimeListDTO> getUserAnimeList(
+    String accessToken, {
+    bool forceRefresh = false,
+  }) async {
     return _userAnimeList;
   }
 
@@ -292,12 +303,14 @@ class DelayedAnimeListService extends FakeAnimeListService {
     String query, {
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) {
     return _searchFuture ??
         super.searchAnime(
           query,
           limit: limit,
           includeNsfw: includeNsfw,
+          forceRefresh: forceRefresh,
         );
   }
 
@@ -305,11 +318,13 @@ class DelayedAnimeListService extends FakeAnimeListService {
   Future<AnimeDTO> getTopAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) {
     return _topAnimeFuture ??
         super.getTopAnime(
           limit: limit,
           includeNsfw: includeNsfw,
+          forceRefresh: forceRefresh,
         );
   }
 
@@ -317,11 +332,13 @@ class DelayedAnimeListService extends FakeAnimeListService {
   Future<AnimeDTO> getTopRatedAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) {
     return _topRatedAnimeFuture ??
         super.getTopRatedAnime(
           limit: limit,
           includeNsfw: includeNsfw,
+          forceRefresh: forceRefresh,
         );
   }
 
@@ -329,11 +346,13 @@ class DelayedAnimeListService extends FakeAnimeListService {
   Future<AnimeDTO> getRecentlyAddedAnime({
     int limit = 30,
     bool includeNsfw = false,
+    bool forceRefresh = false,
   }) {
     return _recentlyAddedAnimeFuture ??
         super.getRecentlyAddedAnime(
           limit: limit,
           includeNsfw: includeNsfw,
+          forceRefresh: forceRefresh,
         );
   }
 }

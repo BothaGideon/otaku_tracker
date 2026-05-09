@@ -5,11 +5,20 @@ import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/providers/auth/oauth_provider.dart';
 import 'package:otaku_tracker/providers/preferences/content_preferences_provider.dart';
 import 'package:otaku_tracker/services/anime/anime_list_service.dart';
+import 'package:otaku_tracker/services/anime/mal_api_cache_service.dart';
 import 'package:otaku_tracker/services/anime_details/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/content/nsfw_content_service.dart';
 
+final malApiCacheServiceProvider = Provider<MalApiCacheService>((ref) {
+  return MalApiCacheService(
+    ttl: const Duration(minutes: 15),
+  );
+});
+
 final animeListServiceProvider = Provider<AnimeListService>((ref) {
-  return AnimeListService();
+  return AnimeListService(
+    cache: ref.read(malApiCacheServiceProvider),
+  );
 });
 
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
