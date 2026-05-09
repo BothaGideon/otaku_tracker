@@ -98,7 +98,7 @@ class ScrollingList extends StatelessWidget {
     return ListTile(
       leading: mainPicture != null
           ? FadeInImage.assetNetwork(
-              placeholder: 'assets/icons/logo_black.png',
+              placeholder: 'assets/icons/ot_new.png',
               image: mainPicture!.medium,
               fit: BoxFit.cover,
               width: 50.0,

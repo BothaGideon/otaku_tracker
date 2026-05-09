@@ -86,7 +86,7 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - assets/icons/logo_black.png
+    - assets/icons/ot_new.png
     - assets/icons/mal_logo_short.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
