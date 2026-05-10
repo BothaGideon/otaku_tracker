@@ -20,6 +20,37 @@ class SeasonalPage extends ConsumerStatefulWidget {
 class _SeasonalPageState extends ConsumerState<SeasonalPage> {
   late final ScrollController _scrollController;
 
+  Future<void> _refreshSeasonalAnime() async {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+
+    await ref.read(seasonalAnimePaginationProvider.notifier).refresh();
+  }
+
+  Widget _buildCenteredRefreshableState({
+    required Widget child,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          onRefresh: _refreshSeasonalAnime,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: constraints.maxHeight,
+                child: Center(
+                  child: child,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -87,16 +118,16 @@ class _SeasonalPageState extends ConsumerState<SeasonalPage> {
                 }
 
                 if (seasonalAnimeState.initialError != null) {
-                  return LoadingErrorState(
-                    onRetry: () => ref
-                        .read(seasonalAnimePaginationProvider.notifier)
-                        .refresh(),
+                  return _buildCenteredRefreshableState(
+                    child: LoadingErrorState(
+                      onRetry: _refreshSeasonalAnime,
+                    ),
                   );
                 }
 
                 if (seasonalAnimeState.items.isEmpty) {
-                  return const Center(
-                    child: Text('No anime found for this season'),
+                  return _buildCenteredRefreshableState(
+                    child: const Text('No anime found for this season'),
                   );
                 }
 
@@ -106,68 +137,72 @@ class _SeasonalPageState extends ConsumerState<SeasonalPage> {
                         ? 1
                         : 0);
 
-                return GridView.builder(
-                  controller: _scrollController,
-                  itemCount: itemCount,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200.0,
-                    mainAxisExtent: 308.0,
-                    mainAxisSpacing: 10.0,
-                    crossAxisSpacing: 10.0,
-                  ),
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index >= seasonalAnimeState.items.length) {
-                      if (seasonalAnimeState.loadMoreError != null) {
-                        return Card(
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'Could not load more titles.',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  FilledButton(
-                                    onPressed: () => ref
-                                        .read(seasonalAnimePaginationProvider.notifier)
-                                        .loadNextPage(),
-                                    child: const Text('Try again'),
-                                  ),
-                                ],
+                return RefreshIndicator(
+                  onRefresh: _refreshSeasonalAnime,
+                  child: GridView.builder(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: itemCount,
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200.0,
+                      mainAxisExtent: 308.0,
+                      mainAxisSpacing: 10.0,
+                      crossAxisSpacing: 10.0,
+                    ),
+                    itemBuilder: (BuildContext context, int index) {
+                      if (index >= seasonalAnimeState.items.length) {
+                        if (seasonalAnimeState.loadMoreError != null) {
+                          return Card(
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Could not load more titles.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    FilledButton(
+                                      onPressed: () => ref
+                                          .read(seasonalAnimePaginationProvider.notifier)
+                                          .loadNextPage(),
+                                      child: const Text('Try again'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+                          );
+                        }
+
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24.0),
+                            child: CircularProgressIndicator(),
                           ),
                         );
                       }
 
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24.0),
-                          child: CircularProgressIndicator(),
+                      final anime = seasonalAnimeState.items[index].node;
+                      final imageUrl =
+                          anime.mainPicture?.large ?? anime.mainPicture?.medium;
+
+                      return GestureDetector(
+                        onTap: () {
+                          openAnimeDetailsPage(context, anime.id);
+                        },
+                        child: PosterImageTitle(
+                          imageUrl: imageUrl,
+                          title: anime.title,
+                          userScore: anime.mean,
+                          showAuxiliaryStatWhenNoStatus: false,
                         ),
                       );
-                    }
-
-                    final anime = seasonalAnimeState.items[index].node;
-                    final imageUrl =
-                        anime.mainPicture?.large ?? anime.mainPicture?.medium;
-
-                    return GestureDetector(
-                      onTap: () {
-                        openAnimeDetailsPage(context, anime.id);
-                      },
-                      child: PosterImageTitle(
-                        imageUrl: imageUrl,
-                        title: anime.title,
-                        userScore: anime.mean,
-                        showAuxiliaryStatWhenNoStatus: false,
-                      ),
-                    );
-                  },
+                    },
+                  ),
                 );
               },
             ),

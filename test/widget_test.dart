@@ -384,15 +384,19 @@ class DelayedAnimeListService extends FakeAnimeListService {
 class FakeSeasonalAnimeListService extends SeasonalAnimeListService {
   FakeSeasonalAnimeListService({
     required AnimeDTO initialResponse,
+    AnimeDTO? refreshedResponse,
     AnimeDTO? nextPageResponse,
   })  : _initialResponse = initialResponse,
+        _refreshedResponse = refreshedResponse,
         _nextPageResponse = nextPageResponse;
 
   final AnimeDTO _initialResponse;
+  final AnimeDTO? _refreshedResponse;
   final AnimeDTO? _nextPageResponse;
   int initialRequestCount = 0;
   int nextPageRequestCount = 0;
   bool? lastIncludeNsfw;
+  final List<bool> forceRefreshValues = [];
 
   @override
   Future<AnimeDTO> getSeasonalAnimeList(
@@ -405,6 +409,12 @@ class FakeSeasonalAnimeListService extends SeasonalAnimeListService {
   }) async {
     initialRequestCount += 1;
     lastIncludeNsfw = includeNsfw;
+    forceRefreshValues.add(forceRefresh);
+
+    if (forceRefresh && _refreshedResponse != null) {
+      return _refreshedResponse;
+    }
+
     return _initialResponse;
   }
 
@@ -1534,6 +1544,61 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Paginated Entry'), findsOneWidget);
+  });
+
+  testWidgets('SeasonalPage pull-to-refresh bypasses cache and reloads data',
+      (WidgetTester tester) async {
+    final fakeSeasonalService = FakeSeasonalAnimeListService(
+      initialResponse: AnimeDTO(
+        data: [
+          buildCatalogAnimeData(
+            id: 1,
+            title: 'Initial Seasonal Title',
+            status: 'currently_airing',
+          ),
+        ],
+      ),
+      refreshedResponse: AnimeDTO(
+        data: [
+          buildCatalogAnimeData(
+            id: 2,
+            title: 'Refreshed Seasonal Title',
+            status: 'currently_airing',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const SeasonalPage(),
+        overrides: [
+          seasonalAnimeListServiceProvider.overrideWith(
+            (ref) => fakeSeasonalService,
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': null,
+              'accessToken': null,
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Initial Seasonal Title'), findsOneWidget);
+
+    await tester.fling(find.byType(GridView), const Offset(0, 300), 1000);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(fakeSeasonalService.initialRequestCount, 2);
+    expect(fakeSeasonalService.forceRefreshValues, [false, true]);
+    expect(find.text('Refreshed Seasonal Title'), findsOneWidget);
+    expect(find.text('Initial Seasonal Title'), findsNothing);
   });
 
   testWidgets('shared app bar opens universal search and shows results',
