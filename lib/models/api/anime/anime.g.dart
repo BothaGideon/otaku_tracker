@@ -36,7 +36,9 @@ Node _$NodeFromJson(Map<String, dynamic> json) => Node(
           : MainPicture.fromJson(json['main_picture'] as Map<String, dynamic>),
       mean: (json['mean'] as num?)?.toDouble(),
       numScoringUsers: (json['num_scoring_users'] as num?)?.toInt(),
+      numListUsers: (json['num_list_users'] as num?)?.toInt(),
       numEpisodes: (json['num_episodes'] as num?)?.toInt(),
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$NodeToJson(Node instance) => <String, dynamic>{
@@ -45,7 +47,9 @@ Map<String, dynamic> _$NodeToJson(Node instance) => <String, dynamic>{
       'main_picture': instance.mainPicture,
       'mean': instance.mean,
       'num_scoring_users': instance.numScoringUsers,
+      'num_list_users': instance.numListUsers,
       'num_episodes': instance.numEpisodes,
+      'status': instance.status,
     };
 
 MainPicture _$MainPictureFromJson(Map<String, dynamic> json) => MainPicture(

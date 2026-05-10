@@ -5,6 +5,7 @@ import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/providers/auth/oauth_provider.dart';
 import 'package:otaku_tracker/providers/preferences/content_preferences_provider.dart';
 import 'package:otaku_tracker/services/anime/anime_list_service.dart';
+import 'package:otaku_tracker/services/anime/seasonal_anime_list_service.dart';
 import 'package:otaku_tracker/services/anime/mal_api_cache_service.dart';
 import 'package:otaku_tracker/services/anime_details/anime_details_view_service.dart';
 import 'package:otaku_tracker/services/content/nsfw_content_service.dart';
@@ -21,71 +22,66 @@ final animeListServiceProvider = Provider<AnimeListService>((ref) {
   );
 });
 
+final seasonalAnimeListServiceProvider = Provider<SeasonalAnimeListService>((ref) {
+  return SeasonalAnimeListService(
+    cache: ref.read(malApiCacheServiceProvider),
+  );
+});
+
 final combinedAnimeListProvider = FutureProvider<CombinedData>((ref) async {
-  final jikan = Jikan();
   final includeNsfw = ref.watch(nsfwPreferenceProvider);
+  final animeListService = ref.read(animeListServiceProvider);
+  final seasonalAnimeListService = ref.read(seasonalAnimeListServiceProvider);
   final season = AnimeSeasonsHelper().getCurrentSeason();
   final previousSeason = AnimeSeasonsHelper().getPreviousSeason();
   final upcomingSeasonDate = AnimeSeasonsHelper().getUpcomingSeason();
 
-  // current season
-  final currentSeason =
-      await jikan.getSeason(year: season.year, season: season.seasonType);
-  // previous season
-  final previousSeasonJ = await jikan.getSeason(
-      year: previousSeason.year, season: previousSeason.seasonType);
-  //upcoming season
-  final upcomingSeason = await jikan.getSeason(
-      year: upcomingSeasonDate.year, season: upcomingSeasonDate.seasonType);
-  // TODO: suggested for you
-  //top upcoming
-  final topUpcoming = await jikan.getTopAnime(filter: TopFilter.upcoming);
-  //top airing
-  final topAiring = await jikan.getTopAnime(filter: TopFilter.airing);
-  //most popular
-  final mostPopular = await jikan.getTopAnime(filter: TopFilter.bypopularity);
-
-  final currentSeasonList = filterAnimeByNsfwPreference(
-    currentSeason.toList(),
-    includeNsfw: includeNsfw,
-  );
-  final previousSeasonList = filterAnimeByNsfwPreference(
-    previousSeasonJ.toList(),
-    includeNsfw: includeNsfw,
-  );
-  final upcomingSeasonList = filterAnimeByNsfwPreference(
-    upcomingSeason.toList(),
-    includeNsfw: includeNsfw,
-  );
-  final mostPopularList = filterAnimeByNsfwPreference(
-    mostPopular.toList(),
-    includeNsfw: includeNsfw,
-  );
-  final topUpcomingList = filterAnimeByNsfwPreference(
-    topUpcoming.toList(),
-    includeNsfw: includeNsfw,
-  );
-  final topAiringList = filterAnimeByNsfwPreference(
-    topAiring.toList(),
-    includeNsfw: includeNsfw,
-  );
+  final responses = await Future.wait([
+    seasonalAnimeListService.getSeasonalAnimeList(
+      season.year,
+      season.seasonType,
+      includeNsfw: includeNsfw,
+    ),
+    seasonalAnimeListService.getSeasonalAnimeList(
+      previousSeason.year,
+      previousSeason.seasonType,
+      includeNsfw: includeNsfw,
+    ),
+    seasonalAnimeListService.getSeasonalAnimeList(
+      upcomingSeasonDate.year,
+      upcomingSeasonDate.seasonType,
+      includeNsfw: includeNsfw,
+    ),
+    animeListService.getRankedAnime(
+      rankingType: 'upcoming',
+      includeNsfw: includeNsfw,
+    ),
+    animeListService.getRankedAnime(
+      rankingType: 'airing',
+      includeNsfw: includeNsfw,
+    ),
+    animeListService.getRankedAnime(
+      rankingType: 'bypopularity',
+      includeNsfw: includeNsfw,
+    ),
+  ]);
 
   return CombinedData(
-      currentSeasonAnimeList: currentSeasonList,
-      previousSeasonAnimeList: previousSeasonList,
-      upcomingSeasonAnimeList: upcomingSeasonList,
-      topUpcoming: topUpcomingList,
-      topAiring: topAiringList,
-      mostPopular: mostPopularList);
+      currentSeasonAnimeList: responses[0].data,
+      previousSeasonAnimeList: responses[1].data,
+      upcomingSeasonAnimeList: responses[2].data,
+      topUpcoming: responses[3].data,
+      topAiring: responses[4].data,
+      mostPopular: responses[5].data);
 });
 
 class CombinedData {
-  final List<Anime> currentSeasonAnimeList;
-  final List<Anime> previousSeasonAnimeList;
-  final List<Anime> upcomingSeasonAnimeList;
-  final List<Anime> topUpcoming;
-  final List<Anime> topAiring;
-  final List<Anime> mostPopular;
+  final List<AnimeData> currentSeasonAnimeList;
+  final List<AnimeData> previousSeasonAnimeList;
+  final List<AnimeData> upcomingSeasonAnimeList;
+  final List<AnimeData> topUpcoming;
+  final List<AnimeData> topAiring;
+  final List<AnimeData> mostPopular;
 
   CombinedData(
       {required this.previousSeasonAnimeList,

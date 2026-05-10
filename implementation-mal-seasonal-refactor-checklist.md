@@ -1,0 +1,5 @@
+- [x] Refactor home and seasonal feed fetching off Jikan and onto MAL services
+- [x] Keep landing page combined feed behavior intact with MAL-backed providers
+- [x] Add paginated seasonal provider state with next-page loading
+- [x] Add infinite scroll to the Seasonal page
+- [x] Verify analyze and relevant tests pass

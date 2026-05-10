@@ -45,8 +45,11 @@ class Node {
   final double? mean;
   @JsonKey(name: 'num_scoring_users')
   final int? numScoringUsers;
+  @JsonKey(name: 'num_list_users')
+  final int? numListUsers;
   @JsonKey(name: 'num_episodes')
   final int? numEpisodes;
+  final String? status;
 
   Node({
     required this.id,
@@ -54,7 +57,9 @@ class Node {
     this.mainPicture,
     this.mean,
     this.numScoringUsers,
+    this.numListUsers,
     this.numEpisodes,
+    this.status,
   });
 
   factory Node.fromJson(Map<String, dynamic> json) => _$NodeFromJson(json);

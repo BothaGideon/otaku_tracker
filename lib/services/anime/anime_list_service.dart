@@ -64,6 +64,7 @@ class AnimeListStatusUpdate {
 
 class AnimeListService {
   static const _userAnimeListCachePrefix = 'userAnimeList';
+  static const _feedFields = 'mean,num_scoring_users,num_list_users,status';
 
   final MalApiCacheService cache;
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
@@ -207,6 +208,20 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime?q=a&limit=$limit&order_by=id&sort=desc&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       cacheKey: 'recentlyAddedAnime:$limit:$includeNsfw',
       errorPrefix: 'Failed to load recently added anime',
+      forceRefresh: forceRefresh,
+    );
+  }
+
+  Future<AnimeDTO> getRankedAnime({
+    required String rankingType,
+    int limit = 30,
+    bool includeNsfw = false,
+    bool forceRefresh = false,
+  }) async {
+    return _fetchAnimeCollection(
+      'https://api.myanimelist.net/v2/anime/ranking?ranking_type=$rankingType&limit=$limit&fields=$_feedFields&nsfw=$includeNsfw',
+      cacheKey: 'rankedAnime:$rankingType:$limit:$includeNsfw',
+      errorPrefix: 'Failed to load ranked anime',
       forceRefresh: forceRefresh,
     );
   }

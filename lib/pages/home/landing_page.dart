@@ -45,7 +45,7 @@ class LandingPage extends ConsumerWidget {
                   key: const ValueKey(3),
                   animeList:
                       combinedList.previousSeasonAnimeList.where((anime) {
-                    return anime.airing == true;
+                    return anime.node.status == 'currently_airing';
                   }).toList(),
                   title: 'Leftovers',
                   subtitle: previousSeason,

@@ -10,11 +10,13 @@ import 'package:otaku_tracker/pages/anime_details/anime_details_page.dart';
 import 'package:otaku_tracker/pages/home/landing_page.dart';
 import 'package:otaku_tracker/pages/my_list/my_list_page.dart';
 import 'package:otaku_tracker/pages/profile/my_profile_page.dart';
+import 'package:otaku_tracker/pages/seasonal/seasonal_page.dart';
 import 'package:otaku_tracker/providers/anime/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/auth/oauth_provider.dart';
 import 'package:otaku_tracker/providers/my_list/my_list_filter_provider.dart';
 import 'package:otaku_tracker/providers/preferences/content_preferences_provider.dart';
 import 'package:otaku_tracker/services/anime/anime_list_service.dart';
+import 'package:otaku_tracker/services/anime/seasonal_anime_list_service.dart';
 import 'package:otaku_tracker/services/auth/oauth_service.dart';
 import 'package:otaku_tracker/services/content/nsfw_content_service.dart';
 import 'package:otaku_tracker/widgets/anime/cards/poster_image_title.dart';
@@ -97,6 +99,28 @@ AnimeData buildSearchAnimeData({
       ),
       mean: mean,
       numScoringUsers: numScoringUsers,
+    ),
+  );
+}
+
+AnimeData buildCatalogAnimeData({
+  required int id,
+  required String title,
+  double mean = 8.0,
+  int numListUsers = 1000,
+  String? status,
+}) {
+  return AnimeData(
+    node: Node(
+      id: id,
+      title: title,
+      mainPicture: MainPicture(
+        medium: 'https://cdn.example.com/anime/$id-medium.jpg',
+        large: 'https://cdn.example.com/anime/$id-large.jpg',
+      ),
+      mean: mean,
+      numListUsers: numListUsers,
+      status: status,
     ),
   );
 }
@@ -354,6 +378,43 @@ class DelayedAnimeListService extends FakeAnimeListService {
           includeNsfw: includeNsfw,
           forceRefresh: forceRefresh,
         );
+  }
+}
+
+class FakeSeasonalAnimeListService extends SeasonalAnimeListService {
+  FakeSeasonalAnimeListService({
+    required AnimeDTO initialResponse,
+    AnimeDTO? nextPageResponse,
+  })  : _initialResponse = initialResponse,
+        _nextPageResponse = nextPageResponse;
+
+  final AnimeDTO _initialResponse;
+  final AnimeDTO? _nextPageResponse;
+  int initialRequestCount = 0;
+  int nextPageRequestCount = 0;
+  bool? lastIncludeNsfw;
+
+  @override
+  Future<AnimeDTO> getSeasonalAnimeList(
+    int year,
+    SeasonType season, {
+    int limit = 100,
+    int offset = 0,
+    bool includeNsfw = false,
+    bool forceRefresh = false,
+  }) async {
+    initialRequestCount += 1;
+    lastIncludeNsfw = includeNsfw;
+    return _initialResponse;
+  }
+
+  @override
+  Future<AnimeDTO> getSeasonalAnimeListByUrl(
+    String url, {
+    bool forceRefresh = false,
+  }) async {
+    nextPageRequestCount += 1;
+    return _nextPageResponse ?? AnimeDTO(data: []);
   }
 }
 
@@ -1367,6 +1428,112 @@ void main() {
 
     expect(find.byType(LandingPageSkeleton), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('SeasonalPage renders MAL-backed seasonal items',
+      (WidgetTester tester) async {
+    final fakeSeasonalService = FakeSeasonalAnimeListService(
+      initialResponse: AnimeDTO(
+        data: [
+          buildCatalogAnimeData(
+            id: 1,
+            title: 'Frieren',
+            status: 'currently_airing',
+          ),
+          buildCatalogAnimeData(
+            id: 2,
+            title: 'Dandadan',
+            status: 'currently_airing',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const SeasonalPage(),
+        overrides: [
+          seasonalAnimeListServiceProvider.overrideWith(
+            (ref) => fakeSeasonalService,
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': null,
+              'accessToken': null,
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(fakeSeasonalService.initialRequestCount, 1);
+    expect(find.text('Frieren'), findsOneWidget);
+    expect(find.text('Dandadan'), findsOneWidget);
+  });
+
+  testWidgets('SeasonalPage loads the next MAL page when scrolled near the end',
+      (WidgetTester tester) async {
+    final fakeSeasonalService = FakeSeasonalAnimeListService(
+      initialResponse: AnimeDTO(
+        data: List.generate(
+          12,
+          (index) => buildCatalogAnimeData(
+            id: index + 1,
+            title: 'Seasonal Title ${index + 1}',
+            status: 'currently_airing',
+          ),
+        ),
+        paging: Paging(
+          next: 'https://api.myanimelist.net/v2/anime/season/2026/spring?offset=100',
+        ),
+      ),
+      nextPageResponse: AnimeDTO(
+        data: [
+          buildCatalogAnimeData(
+            id: 99,
+            title: 'Paginated Entry',
+            status: 'currently_airing',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      createTestApp(
+        child: const SeasonalPage(),
+        overrides: [
+          seasonalAnimeListServiceProvider.overrideWith(
+            (ref) => fakeSeasonalService,
+          ),
+          userDataProvider.overrideWith(
+            (ref) async => {
+              'username': null,
+              'accessToken': null,
+              'picture': null,
+            },
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -2000));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(fakeSeasonalService.nextPageRequestCount, 1);
+
+    await tester.scrollUntilVisible(
+      find.text('Paginated Entry'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Paginated Entry'), findsOneWidget);
   });
 
   testWidgets('shared app bar opens universal search and shows results',

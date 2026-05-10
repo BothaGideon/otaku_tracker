@@ -1,13 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/constants/anime/anime_navigation.dart';
+import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/widgets/shared/loading/network_image_skeleton.dart';
 
 import 'carousel_title_subtitle.dart';
 
 class HorizontalCarousel extends StatelessWidget {
-  final List<Anime> animeList;
+  final List<AnimeData> animeList;
   final String title;
   final String? subtitle;
 
@@ -40,12 +40,13 @@ class HorizontalCarousel extends StatelessWidget {
             viewportFraction: 0.33,
           ),
           items: animeList.map((animeData) {
-            final anime = animeData;
+            final anime = animeData.node;
+            final imageUrl = anime.mainPicture?.large ?? anime.mainPicture?.medium;
             return Builder(
               builder: (BuildContext context) {
                 return InkWell(
                   borderRadius: BorderRadius.circular(15),
-                  onTap: () => openAnimeDetailsPage(context, anime.malId),
+                  onTap: () => openAnimeDetailsPage(context, anime.id),
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.33,
                     margin: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -54,9 +55,9 @@ class HorizontalCarousel extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        anime.imageUrl.isNotEmpty
+                        imageUrl != null && imageUrl.isNotEmpty
                             ? NetworkImageSkeleton(
-                                imageUrl: anime.imageUrl,
+                                imageUrl: imageUrl,
                                 height: 204.0,
                               )
                             : const SizedBox(
@@ -67,7 +68,7 @@ class HorizontalCarousel extends StatelessWidget {
                               ),
                         const SizedBox(height: 10.0),
                         Text(
-                          anime.titleEnglish ?? anime.title,
+                          anime.title,
                           style: const TextStyle(
                               fontSize: 14.0, fontWeight: FontWeight.w400),
                           overflow: TextOverflow.ellipsis,
