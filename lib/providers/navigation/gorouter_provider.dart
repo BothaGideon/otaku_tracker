@@ -1,9 +1,12 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:otaku_tracker/main.dart';
 import 'package:otaku_tracker/widgets/shared/feedback/loading_error_state.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
+  final firebaseAnalytics = FirebaseAnalytics.instance;
+
   return GoRouter(
     routes: [
       GoRoute(
@@ -17,5 +20,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     errorBuilder: (context, state) => LoadingErrorState(onRetry: () {}),
+    observers: [
+      FirebaseAnalyticsObserver(analytics: firebaseAnalytics),
+    ],
   );
 });
