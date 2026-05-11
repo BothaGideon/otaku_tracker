@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCabajSiYN5Dzu7J4x0vLKtUfKMTzhhGTA',
-    appId: '1:822428244050:android:381305a8bb6d45c724678b',
+    appId: '1:822428244050:android:276ceb53f02b682424678b',
     messagingSenderId: '822428244050',
     projectId: 'otakutracker',
     storageBucket: 'otakutracker.firebasestorage.app',
@@ -59,10 +59,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB4jeQd4dwVLKiZjn2U-ENM6qaXE4zYNkA',
-    appId: '1:822428244050:ios:da62514484f8bf1624678b',
+    appId: '1:822428244050:ios:c0282d0409554ef624678b',
     messagingSenderId: '822428244050',
     projectId: 'otakutracker',
     storageBucket: 'otakutracker.firebasestorage.app',
-    iosBundleId: 'com.tenjinlab.otaku_tracker',
+    iosBundleId: 'com.tenjinlab.otakutracker',
   );
 }
