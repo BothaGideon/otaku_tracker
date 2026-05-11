@@ -4,16 +4,23 @@ import 'package:http/http.dart' as http;
 import 'package:jikan_api/jikan_api.dart';
 import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/services/anime/mal_api_cache_service.dart';
+import 'package:otaku_tracker/services/telemetry/app_telemetry_service.dart';
 
 class SeasonalAnimeListService {
   static const _feedFields = 'mean,num_list_users,status';
 
   final MalApiCacheService cache;
+  final AppTelemetryService telemetry;
+  final http.Client httpClient;
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
   SeasonalAnimeListService({
     MalApiCacheService? cache,
-  }) : cache = cache ?? MalApiCacheService(ttl: const Duration(minutes: 15));
+    AppTelemetryService? telemetry,
+    http.Client? httpClient,
+  })  : cache = cache ?? MalApiCacheService(ttl: const Duration(minutes: 15)),
+        telemetry = telemetry ?? AppTelemetryService(),
+        httpClient = httpClient ?? http.Client();
 
   static String seasonPathSegment(SeasonType season) {
     return season.name;
@@ -49,6 +56,8 @@ class SeasonalAnimeListService {
       url: url,
       cacheKey:
           'seasonalAnime:$year:${season.name}:$limit:$offset:$includeNsfw',
+      operation: 'get_seasonal_anime_list',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -60,6 +69,7 @@ class SeasonalAnimeListService {
     return _fetchSeasonalAnime(
       url: url,
       cacheKey: 'seasonalAnimeNext:$url',
+      operation: 'get_seasonal_anime_list_next_page',
       forceRefresh: forceRefresh,
     );
   }
@@ -67,6 +77,8 @@ class SeasonalAnimeListService {
   Future<AnimeDTO> _fetchSeasonalAnime({
     required String url,
     required String cacheKey,
+    required String operation,
+    bool? includeNsfw,
     required bool forceRefresh,
   }) async {
     if (!forceRefresh) {
@@ -83,7 +95,23 @@ class SeasonalAnimeListService {
     );
     request.headers.addAll(headers);
 
-    final streamedResponse = await request.send();
+    http.StreamedResponse streamedResponse;
+
+    try {
+      streamedResponse = await httpClient.send(request);
+    } catch (error, stackTrace) {
+      await telemetry.trackMalApiFailure(
+        operation: operation,
+        endpoint: 'anime_season',
+        method: 'GET',
+        authenticated: false,
+        includeNsfw: includeNsfw,
+        reason: error.runtimeType.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
 
     if (streamedResponse.statusCode == 200) {
       final response = await http.Response.fromStream(streamedResponse);
@@ -94,8 +122,43 @@ class SeasonalAnimeListService {
 
       return fromJson;
     } else {
-      throw Exception(
-          'Failed to load anime list: ${streamedResponse.reasonPhrase}');
+      final response = await http.Response.fromStream(streamedResponse);
+      final reason = _extractFailureReason(response.reasonPhrase, response.body);
+      final exception = Exception('Failed to load anime list: $reason');
+
+      await telemetry.trackMalApiFailure(
+        operation: operation,
+        endpoint: 'anime_season',
+        method: 'GET',
+        statusCode: response.statusCode,
+        authenticated: false,
+        includeNsfw: includeNsfw,
+        reason: reason,
+        error: exception,
+        stackTrace: StackTrace.current,
+      );
+
+      throw exception;
     }
+  }
+
+  String _extractFailureReason(String? reasonPhrase, String body) {
+    if (body.isNotEmpty) {
+      try {
+        final jsonBody = convert.json.decode(body);
+
+        if (jsonBody is Map<String, dynamic>) {
+          for (final key in ['message', 'error', 'hint']) {
+            final value = jsonBody[key];
+
+            if (value is String && value.isNotEmpty) {
+              return value;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    return reasonPhrase ?? 'Unknown error';
   }
 }

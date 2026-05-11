@@ -3,6 +3,7 @@ import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/services/anime/mal_api_cache_service.dart';
+import 'package:otaku_tracker/services/telemetry/app_telemetry_service.dart';
 
 class AnimeListStatusUpdate {
   final String? status;
@@ -67,11 +68,17 @@ class AnimeListService {
   static const _feedFields = 'mean,num_scoring_users,num_list_users,status';
 
   final MalApiCacheService cache;
+  final AppTelemetryService telemetry;
+  final http.Client httpClient;
   final headers = {'X-MAL-CLIENT-ID': const String.fromEnvironment('MALAPI')};
 
   AnimeListService({
     MalApiCacheService? cache,
-  }) : cache = cache ?? MalApiCacheService(ttl: const Duration(minutes: 15));
+    AppTelemetryService? telemetry,
+    http.Client? httpClient,
+  })  : cache = cache ?? MalApiCacheService(ttl: const Duration(minutes: 15)),
+        telemetry = telemetry ?? AppTelemetryService(),
+        httpClient = httpClient ?? http.Client();
 
   Future<AnimeDTO> searchAnime(
     String query, {
@@ -83,6 +90,9 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime?q=${Uri.encodeQueryComponent(query)}&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       cacheKey: 'searchAnime:$query:$limit:$includeNsfw',
       errorPrefix: 'Failed to search anime',
+      operation: 'search_anime',
+      endpoint: 'anime_search',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -94,6 +104,8 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime?q=one&limit=500&order_by=id&sort=asc',
       cacheKey: 'getAnimeList',
       errorPrefix: 'Failed to load anime list',
+      operation: 'get_anime_list',
+      endpoint: 'anime_search',
       forceRefresh: forceRefresh,
     );
   }
@@ -107,6 +119,8 @@ class AnimeListService {
           'https://api.myanimelist.net/v2/users/@me/animelist?limit=1000&fields=list_status{priority,num_times_rewatched,rewatch_value,tags,comments},mean,num_episodes',
       cacheKey: _userAnimeListCacheKey(accessToken),
       errorPrefix: 'Failed to load user anime list',
+      operation: 'get_user_anime_list',
+      endpoint: 'users_animelist',
       headers: {'Authorization': 'Bearer $accessToken'},
       fromJson: UserAnimeListDTO.fromJson,
       forceRefresh: forceRefresh,
@@ -138,7 +152,22 @@ class AnimeListService {
     });
     request.bodyFields = fields;
 
-    final streamedResponse = await request.send();
+    http.StreamedResponse streamedResponse;
+
+    try {
+      streamedResponse = await httpClient.send(request);
+    } catch (error, stackTrace) {
+      await telemetry.trackMalApiFailure(
+        operation: 'update_list_status',
+        endpoint: 'anime_my_list_status',
+        method: 'PATCH',
+        authenticated: true,
+        reason: error.runtimeType.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
 
     if (streamedResponse.statusCode == 200) {
       invalidateUserAnimeList(accessToken);
@@ -148,8 +177,23 @@ class AnimeListService {
       return ListStatus.fromJson(jsonResponse);
     }
 
+    final response = await http.Response.fromStream(streamedResponse);
+    final reason = _extractFailureReason(response.reasonPhrase, response.body);
+    final exception = Exception('Failed to update anime list status: $reason');
+
+    await telemetry.trackMalApiFailure(
+      operation: 'update_list_status',
+      endpoint: 'anime_my_list_status',
+      method: 'PATCH',
+      statusCode: response.statusCode,
+      authenticated: true,
+      reason: reason,
+      error: exception,
+      stackTrace: StackTrace.current,
+    );
+
     throw Exception(
-      'Failed to update anime list status: ${streamedResponse.reasonPhrase}',
+      'Failed to update anime list status: $reason',
     );
   }
 
@@ -160,7 +204,22 @@ class AnimeListService {
     );
     request.headers.addAll({'Authorization': 'Bearer $accessToken'});
 
-    final streamedResponse = await request.send();
+    http.StreamedResponse streamedResponse;
+
+    try {
+      streamedResponse = await httpClient.send(request);
+    } catch (error, stackTrace) {
+      await telemetry.trackMalApiFailure(
+        operation: 'delete_list_status',
+        endpoint: 'anime_my_list_status',
+        method: 'DELETE',
+        authenticated: true,
+        reason: error.runtimeType.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
 
     if (streamedResponse.statusCode == 200 ||
         streamedResponse.statusCode == 404) {
@@ -168,8 +227,23 @@ class AnimeListService {
       return;
     }
 
+    final response = await http.Response.fromStream(streamedResponse);
+    final reason = _extractFailureReason(response.reasonPhrase, response.body);
+    final exception = Exception('Failed to delete anime list status: $reason');
+
+    await telemetry.trackMalApiFailure(
+      operation: 'delete_list_status',
+      endpoint: 'anime_my_list_status',
+      method: 'DELETE',
+      statusCode: response.statusCode,
+      authenticated: true,
+      reason: reason,
+      error: exception,
+      stackTrace: StackTrace.current,
+    );
+
     throw Exception(
-      'Failed to delete anime list status: ${streamedResponse.reasonPhrase}',
+      'Failed to delete anime list status: $reason',
     );
   }
 
@@ -182,6 +256,9 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime/ranking?ranking_type=bypopularity&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       cacheKey: 'topAnime:$limit:$includeNsfw',
       errorPrefix: 'Failed to load top anime',
+      operation: 'get_top_anime',
+      endpoint: 'anime_ranking',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -195,6 +272,9 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=$limit&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       cacheKey: 'topRatedAnime:$limit:$includeNsfw',
       errorPrefix: 'Failed to load top rated anime',
+      operation: 'get_top_rated_anime',
+      endpoint: 'anime_ranking',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -208,6 +288,9 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime?q=a&limit=$limit&order_by=id&sort=desc&fields=mean,num_scoring_users&nsfw=$includeNsfw',
       cacheKey: 'recentlyAddedAnime:$limit:$includeNsfw',
       errorPrefix: 'Failed to load recently added anime',
+      operation: 'get_recently_added_anime',
+      endpoint: 'anime_search',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -222,6 +305,9 @@ class AnimeListService {
       'https://api.myanimelist.net/v2/anime/ranking?ranking_type=$rankingType&limit=$limit&fields=$_feedFields&nsfw=$includeNsfw',
       cacheKey: 'rankedAnime:$rankingType:$limit:$includeNsfw',
       errorPrefix: 'Failed to load ranked anime',
+      operation: 'get_ranked_anime',
+      endpoint: 'anime_ranking',
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -230,14 +316,20 @@ class AnimeListService {
     String url, {
     required String cacheKey,
     required String errorPrefix,
+    required String operation,
+    required String endpoint,
+    bool? includeNsfw,
     bool forceRefresh = false,
   }) async {
     return _getCachedGet(
       url: url,
       cacheKey: cacheKey,
       errorPrefix: errorPrefix,
+      operation: operation,
+      endpoint: endpoint,
       headers: headers,
       fromJson: AnimeDTO.fromJson,
+      includeNsfw: includeNsfw,
       forceRefresh: forceRefresh,
     );
   }
@@ -246,8 +338,11 @@ class AnimeListService {
     required String url,
     required String cacheKey,
     required String errorPrefix,
+    required String operation,
+    required String endpoint,
     required Map<String, String> headers,
     required T Function(Map<String, dynamic> json) fromJson,
+    bool? includeNsfw,
     bool forceRefresh = false,
   }) async {
     if (!forceRefresh) {
@@ -264,7 +359,23 @@ class AnimeListService {
     );
     request.headers.addAll(headers);
 
-    final streamedResponse = await request.send();
+    http.StreamedResponse streamedResponse;
+
+    try {
+      streamedResponse = await httpClient.send(request);
+    } catch (error, stackTrace) {
+      await telemetry.trackMalApiFailure(
+        operation: operation,
+        endpoint: endpoint,
+        method: 'GET',
+        authenticated: headers.containsKey('Authorization'),
+        includeNsfw: includeNsfw,
+        reason: error.runtimeType.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
 
     if (streamedResponse.statusCode == 200) {
       final response = await http.Response.fromStream(streamedResponse);
@@ -275,11 +386,47 @@ class AnimeListService {
 
       return parsedValue;
     } else {
-      throw Exception('$errorPrefix: ${streamedResponse.reasonPhrase}');
+      final response = await http.Response.fromStream(streamedResponse);
+      final reason = _extractFailureReason(response.reasonPhrase, response.body);
+      final exception = Exception('$errorPrefix: $reason');
+
+      await telemetry.trackMalApiFailure(
+        operation: operation,
+        endpoint: endpoint,
+        method: 'GET',
+        statusCode: response.statusCode,
+        authenticated: headers.containsKey('Authorization'),
+        includeNsfw: includeNsfw,
+        reason: reason,
+        error: exception,
+        stackTrace: StackTrace.current,
+      );
+
+      throw exception;
     }
   }
 
   String _userAnimeListCacheKey(String accessToken) {
     return '$_userAnimeListCachePrefix:${accessToken.hashCode}';
+  }
+
+  String _extractFailureReason(String? reasonPhrase, String body) {
+    if (body.isNotEmpty) {
+      try {
+        final jsonBody = convert.json.decode(body);
+
+        if (jsonBody is Map<String, dynamic>) {
+          for (final key in ['message', 'error', 'hint']) {
+            final value = jsonBody[key];
+
+            if (value is String && value.isNotEmpty) {
+              return value;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    return reasonPhrase ?? 'Unknown error';
   }
 }
