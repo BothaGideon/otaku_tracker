@@ -9,10 +9,11 @@ This file is for coding agents and LLM assistants working in this repository.
 - Anime data source: `jikan_api`
 - Auth: MyAnimeList OAuth
 - Main UI areas:
-  - `lib/pages/landing_page.dart`
-  - `lib/pages/seasonal_page.dart`
-  - `lib/pages/my_list_page.dart`
-  - `lib/pages/my_profile_page.dart`
+  - `lib/pages/home/landing_page.dart`
+  - `lib/pages/seasonal/seasonal_page.dart`
+  - `lib/pages/my_list/my_list_page.dart`
+  - `lib/pages/profile/profile_page.dart`
+- Routing: `go_router` for navigation with `GoRouter` provider in `lib/providers/navigation/`
 - Reusable UI belongs in `lib/widgets/`
 - App-level helpers/constants belong in `lib/constants/`
 - Providers belong in `lib/providers/`
@@ -31,28 +32,35 @@ This file is for coding agents and LLM assistants working in this repository.
    - presenting already-available data
    - avoiding fallback/formatting/business-rule checks when those can be prepared in providers or services first
 
-3. When a widget needs multiple null/empty/formatting checks to present data, move those checks into the service/provider layer and pass the widget a prepared view model or presentation object.
+3. Services should focus on:
+   - preparing presentation data (view models/presentation objects) that widgets consume
+   - factoring out complex formatting, filtering, and state transformations
+   - examples: `AnimeDetailsViewService` builds `AnimeDetailsViewData`, `AnimeListEntryPresentation` with all display logic prepared
+   - view service methods are typically read-only and pure (no side effects)
 
-4. Prefer existing project patterns before adding new ones:
+4. When a widget needs multiple null/empty/formatting checks to present data, move those checks into the service/provider layer and pass the widget a prepared view model or presentation object.
+
+5. Prefer existing project patterns before adding new ones:
    - use Riverpod providers already in the repo
    - use shared widgets when a pattern already exists
-   - use `openAnimeDetailsPage(...)` for anime-detail navigation
+   - use `openAnimeDetailsPage(...)` (from `lib/constants/anime/anime_navigation.dart`) for anime-detail navigation
 
-5. Keep changes scoped:
+6. Keep changes scoped:
    - do not refactor unrelated files
    - do not add new dependencies unless necessary
    - prefer small, direct widget extraction over new abstraction layers
 
-6. For UI/UX decisions, use and reference Material 3 guidance:
+7. For UI/UX decisions, use and reference Material 3 guidance:
    - prefer Material 3 components, patterns, and terminology where they fit the product
    - use Material 3 color roles, spacing, states, and feedback patterns instead of ad hoc styling choices
    - when choosing loading, empty, error, navigation, or interaction patterns, align them with Material 3 guidance unless the existing product intentionally differs
 
-7. Skeleton loading is mandatory for data-driven UI:
+8. Skeleton loading is mandatory for data-driven UI:
    - every new widget or UI component that waits on async data, deferred provider state, or any user-visible loading period must include skeleton loading by default
    - do not introduce new spinner-only or blank loading states for new UI work unless the user explicitly asks for a different pattern
    - skeletons should match the final layout closely enough to preserve spacing and reduce layout shift
    - when adding a new async surface, plan and implement loading, empty, error, and loaded states together
+   - use existing skeletons from `lib/widgets/shared/loading/` (e.g., `AnimeDetailsAccountSectionSkeleton`) and match their layout
 
 ## Implementation Guidance
 
@@ -61,6 +69,17 @@ This file is for coding agents and LLM assistants working in this repository.
 - Preserve current UI behavior unless the task explicitly asks for behavior changes.
 - For details-page work, keep API fetching in providers/pages, and keep display logic in widgets.
 - When adding new async UI, include the skeleton widget(s) in the same change rather than deferring loading-state work.
+
+### Services and View Models
+
+- Services in `lib/services/` prepare data for consumption by widgets and pages.
+- **View Services** (e.g., `AnimeDetailsViewService`) build presentation objects that encapsulate all formatting, filtering, and display logic:
+  - Input: raw API model (e.g., `Anime`, `ListStatus`)
+  - Output: presentation object (e.g., `AnimeDetailsViewData`, `AnimeListEntryPresentation`)
+  - Methods should be pure and side-effect-free
+  - Widgets receive prepared data, avoiding null/empty/formatting checks
+- Organize services by domain: `lib/services/anime/`, `lib/services/auth/`, `lib/services/anime_details/`, etc.
+- Providers can read services and call their methods to prepare data before passing to widgets.
 
 ## Verification Rules
 
@@ -122,3 +141,5 @@ This file is for coding agents and LLM assistants working in this repository.
 
 - In `PosterImageTitle`, the thumbs-up icon represents the anime favorites count, not the popularity rank.
 - The anime details hero poster should be a plain rounded poster image only. It should not reuse `PosterImageTitle`, and it should not show overlay stats, favorites, score, or the small title underneath.
+- Navigation uses `GoRouter` with routes defined in `lib/providers/navigation/gorouter_provider.dart`; for anime details, always use `openAnimeDetailsPage(context, animeId)` from `lib/constants/anime/anime_navigation.dart`
+- Deep linking is handled by `lib/services/navigation/deeplink_service.dart`; OAuth callbacks are routed through this service
