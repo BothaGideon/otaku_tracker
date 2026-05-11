@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 class DeepLinkService {
   final AppLinks _appLinks = AppLinks();
-  static const platform = MethodChannel('com.example.otaku_tracker/deep_link');
+  static const platform = MethodChannel('com.tenjinlab.otaku_tracker/deep_link');
 
   Function(Uri)? _onDeepLinkReceived;
 

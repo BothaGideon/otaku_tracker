@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '822428244050',
     projectId: 'otakutracker',
     storageBucket: 'otakutracker.firebasestorage.app',
-    iosBundleId: 'com.example.otakuTracker',
+    iosBundleId: 'com.tenjinlab.otaku_tracker',
   );
 }

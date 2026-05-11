@@ -1,4 +1,4 @@
-package com.example.otaku_tracker
+package com.tenjinlab.otaku_tracker
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.example.otaku_tracker/deep_link"
+    private val CHANNEL = "com.tenjinlab.otaku_tracker/deep_link"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
