@@ -428,7 +428,6 @@ class FakeSeasonalAnimeListService extends SeasonalAnimeListService {
   }
 }
 
-
 class FakeOauthService extends OauthService {
   FakeOauthService({
     this.username,
@@ -1481,6 +1480,22 @@ void main() {
     expect(fakeSeasonalService.initialRequestCount, 1);
     expect(find.text('Frieren'), findsOneWidget);
     expect(find.text('Dandadan'), findsOneWidget);
+  });
+
+  test('Seasonal MAL URL uses the season slug instead of the enum string', () {
+    final url = SeasonalAnimeListService.buildSeasonalAnimeListUrl(
+      2026,
+      SeasonType.spring,
+      limit: 50,
+      offset: 100,
+      includeNsfw: true,
+    );
+
+    expect(
+      url,
+      'https://api.myanimelist.net/v2/anime/season/2026/spring?limit=50&offset=100&sort=anime_num_list_users&fields=mean,num_list_users,status&nsfw=true',
+    );
+    expect(url.contains('SeasonType.spring'), isFalse);
   });
 
   testWidgets('SeasonalPage loads the next MAL page when scrolled near the end',

@@ -15,6 +15,20 @@ class SeasonalAnimeListService {
     MalApiCacheService? cache,
   }) : cache = cache ?? MalApiCacheService(ttl: const Duration(minutes: 15));
 
+  static String seasonPathSegment(SeasonType season) {
+    return season.name;
+  }
+
+  static String buildSeasonalAnimeListUrl(
+    int year,
+    SeasonType season, {
+    int limit = 100,
+    int offset = 0,
+    bool includeNsfw = false,
+  }) {
+    return 'https://api.myanimelist.net/v2/anime/season/$year/${seasonPathSegment(season)}?limit=$limit&offset=$offset&sort=anime_num_list_users&fields=$_feedFields&nsfw=$includeNsfw';
+  }
+
   Future<AnimeDTO> getSeasonalAnimeList(
     int year,
     SeasonType season, {
@@ -23,8 +37,13 @@ class SeasonalAnimeListService {
     bool includeNsfw = false,
     bool forceRefresh = false,
   }) async {
-    final url =
-        'https://api.myanimelist.net/v2/anime/season/$year/$season?limit=$limit&offset=$offset&sort=anime_num_list_users&fields=$_feedFields&nsfw=$includeNsfw';
+    final url = buildSeasonalAnimeListUrl(
+      year,
+      season,
+      limit: limit,
+      offset: offset,
+      includeNsfw: includeNsfw,
+    );
 
     return _fetchSeasonalAnime(
       url: url,

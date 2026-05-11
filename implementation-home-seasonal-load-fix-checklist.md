@@ -1,0 +1,4 @@
+- [x] Confirm the shared Home and Seasonal load failure cause
+- [x] Fix MAL seasonal URL generation to use the correct season slug
+- [x] Add regression coverage for seasonal MAL URL construction
+- [x] Verify analyze and widget tests pass
