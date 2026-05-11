@@ -188,7 +188,7 @@ class AnimeDetailsHeroContent extends StatelessWidget {
         AnimeDetailsScorePanel(stats: details.heroStats),
         const SizedBox(height: 16),
         Wrap(
-          alignment: WrapAlignment.center,
+          alignment: WrapAlignment.start,
           spacing: 8,
           runSpacing: 8,
           children: metadata,
@@ -1283,7 +1283,7 @@ class AnimeDetailsInfoBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
