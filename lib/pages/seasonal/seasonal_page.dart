@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -84,6 +85,11 @@ class _SeasonalPageState extends ConsumerState<SeasonalPage> {
 
     return Scaffold(
       appBar: const OtakuTrackerAppBar(title: Text('Seasonal Page')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => FirebaseCrashlytics.instance.crash(),
+        tooltip: 'Trigger Crash (Test)',
+        child: const Icon(Icons.bug_report),
+      ),
       body: Column(
         children: [
           SegmentedButton<SeasonSelectionFilter>(
