@@ -2,7 +2,7 @@
 
 This file is for coding agents and LLM assistants working in this repository.
 
-> `AGENTS.md` is the source of truth. Any change made here must be mirrored to `CLAUDE.md` in the same change so both files stay identical (except for this notice).
+> Mirror of `AGENTS.md`. Do not edit directly — update `AGENTS.md` and mirror changes here.
 
 ## Project Context
 
