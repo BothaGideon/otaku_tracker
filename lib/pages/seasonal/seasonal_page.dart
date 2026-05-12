@@ -85,11 +85,6 @@ class _SeasonalPageState extends ConsumerState<SeasonalPage> {
 
     return Scaffold(
       appBar: const OtakuTrackerAppBar(title: Text('Seasonal Page')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => FirebaseCrashlytics.instance.crash(),
-        tooltip: 'Trigger Crash (Test)',
-        child: const Icon(Icons.bug_report),
-      ),
       body: Column(
         children: [
           SegmentedButton<SeasonSelectionFilter>(
