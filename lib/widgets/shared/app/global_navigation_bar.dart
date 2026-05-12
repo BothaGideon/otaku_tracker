@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:otaku_tracker/providers/navigation/navigation_index_provider.dart';
 
 class GlobalNavigationBar extends ConsumerWidget {
@@ -19,15 +18,15 @@ class GlobalNavigationBar extends ConsumerWidget {
       },
       destinations: const [
         NavigationDestination(
-          icon: Icon(Symbols.home),
+          icon: Icon(Icons.home),
           label: 'Home',
         ),
         NavigationDestination(
-          icon: Icon(Symbols.nest_eco_leaf),
+          icon: Icon(Icons.eco),
           label: 'Seasonal',
         ),
         NavigationDestination(
-          icon: Icon(Symbols.bookmark_add),
+          icon: Icon(Icons.bookmark_add),
           label: 'My list',
         ),
       ],
