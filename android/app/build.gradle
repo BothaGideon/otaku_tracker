@@ -28,6 +28,12 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+def keyProperties = new Properties()
+def keyPropertiesFile = rootProject.file('key.properties')
+if (keyPropertiesFile.exists()) {
+    keyProperties.load(new FileInputStream(keyPropertiesFile))
+}
+
 android {
     namespace = "com.tenjinlab.otakutracker"
     compileSdk = flutter.compileSdkVersion
@@ -52,7 +58,7 @@ android {
         release {
             keyAlias keyProperties['keyAlias']
             keyPassword keyProperties['keyPassword']
-            storeFile file(keyProperties['storeFile'])
+            storeFile file(keyProperties['storeFile']) ? file(keyProperties['storeFile']) : null
             storePassword keyProperties['storePassword']
         }
     }
