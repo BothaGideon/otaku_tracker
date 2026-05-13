@@ -228,6 +228,53 @@ Do not track purely cosmetic interactions (scroll position, tab hover) — track
 - [ ] `AppTelemetryService` injected via constructor (not instantiated inline in call sites)
 - [ ] No tracking calls in widgets or pages — only in services
 
+## App Versioning
+
+Flutter app versions follow `major.minor.patch+buildNumber` in `pubspec.yaml` (e.g. `0.5.0+5`). Both the semantic version and the build number must be updated together on every release.
+
+### Build number
+
+The build number (after `+`) must increment by 1 on every release, regardless of version type. It is used by the Play Store and App Store to distinguish builds. Never reset it or reuse a previous value.
+
+### Patch bump (`0.5.0` → `0.5.1`)
+
+Increment the patch segment when the change:
+- Fixes a bug, crash, or regression with no new user-facing functionality
+- Corrects a visual defect or layout issue (e.g. misaligned widget, wrong color, clipped text)
+- Improves performance or reliability of an existing feature without changing its behavior
+- Fixes a broken or incorrect data display (e.g. wrong label, missing fallback, incorrect stat)
+- Updates copy, labels, or wording without changing any feature
+
+Rule of thumb: a user would not notice the difference in capability — only that something broken now works.
+
+### Minor bump (`0.5.0` → `0.6.0`)
+
+Increment the minor segment when the change:
+- Adds a new user-facing feature, screen, or page
+- Adds a meaningful new capability to an existing feature (e.g. new filter option, new list action, new display mode)
+- Adds a new section or content area to an existing page
+- Introduces a new preference or setting that changes app behavior
+- Adds tracking/analytics for a new feature area (when shipped alongside that feature)
+
+Rule of thumb: a user gains new functionality they did not have before.
+
+### Major bump (`0.x.y` → `1.0.0` or `1.x.y` → `2.0.0`)
+
+Increment the major segment when the change:
+- Represents a breaking change in auth flow, data model, or core navigation that may require users to re-authenticate or lose local state
+- Delivers a full redesign of the app's core UI or navigation structure
+- Marks the first stable public release (`0.x.y` → `1.0.0`)
+- Retires or replaces a major feature that existed in the previous major version
+
+Rule of thumb: the app is meaningfully different in structure or commitment level — a user upgrading may notice a fundamental shift.
+
+### Checklist when bumping a version
+
+- [ ] Update `version:` in `pubspec.yaml` with the correct `major.minor.patch+buildNumber`
+- [ ] Build number incremented by 1 from the previous release
+- [ ] Version segment chosen matches the guidelines above
+- [ ] Commit message references the new version (e.g. `Bump application version to 0.5.1`)
+
 ## Domain Knowledge
 
 - In `PosterImageTitle`, the thumbs-up icon represents the anime favorites count, not the popularity rank.
