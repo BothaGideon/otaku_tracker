@@ -50,6 +50,23 @@ class PosterImageTitle extends StatelessWidget {
     }
   }
 
+  static Color _statusColor(String status) {
+    switch (status) {
+      case 'watching':
+        return const Color(0xFF388E3C); // green
+      case 'completed':
+        return const Color(0xFF1976D2); // blue
+      case 'on_hold':
+        return const Color(0xFFF57C00); // orange
+      case 'dropped':
+        return const Color(0xFFD32F2F); // red
+      case 'plan_to_watch':
+        return const Color(0xFF512DA8); // deep purple (matches app seed)
+      default:
+        return const Color(0xFF455A64); // blue-grey
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
@@ -125,10 +142,24 @@ class PosterImageTitle extends StatelessWidget {
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerRight,
-                                child: Text(
-                                  _formatStatus(userStatus!),
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 14.0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _statusColor(userStatus!),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    _formatStatus(userStatus!),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.2,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
