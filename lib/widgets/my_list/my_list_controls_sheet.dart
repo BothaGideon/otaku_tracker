@@ -23,7 +23,6 @@ class MyListControlsBar extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
-      isScrollControlled: true,
       showDragHandle: true,
       builder: (context) => MyListControlsSheet(
         initialStatus: selectedStatus,
