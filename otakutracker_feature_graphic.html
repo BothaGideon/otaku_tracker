@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@300;400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .feature-graphic {
+    width: 1024px;
+    height: 500px;
+    background: linear-gradient(135deg, #0a0010 0%, #100020 40%, #160030 70%, #0d0018 100%);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  /* Ambient glow layers */
+  .glow-left {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(120,60,210,0.18) 0%, transparent 60%);
+    top: -150px;
+    left: -100px;
+    pointer-events: none;
+  }
+  .glow-pink {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,80,180,0.13) 0%, transparent 65%);
+    top: -80px;
+    left: 80px;
+    pointer-events: none;
+  }
+  .glow-right {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(90,40,180,0.12) 0%, transparent 60%);
+    bottom: -200px;
+    right: 100px;
+    pointer-events: none;
+  }
+
+  /* Subtle grid lines */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(130,80,220,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130,80,220,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Left: App icon area */
+  .icon-section {
+    position: relative;
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .icon-ring-outer {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 1px solid rgba(140,80,220,0.12);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .icon-ring-mid {
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    border: 1px solid rgba(140,80,220,0.10);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .app-icon {
+    width: 140px;
+    height: 140px;
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 0 60px rgba(110,50,200,0.5), 0 0 120px rgba(110,50,200,0.2);
+  }
+  .app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Divider */
+  .divider {
+    width: 1px;
+    height: 360px;
+    background: linear-gradient(to bottom, transparent, rgba(140,80,220,0.25) 30%, rgba(200,100,255,0.35) 50%, rgba(140,80,220,0.25) 70%, transparent);
+    flex-shrink: 0;
+  }
+
+  /* Right: Content */
+  .content-section {
+    flex: 1;
+    padding: 48px 56px 48px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .eyebrow {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #c96bff;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background: #c96bff;
+  }
+
+  .app-name {
+    font-family: 'Cinzel', serif;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #e8d0ff 0%, #b880ff 40%, #9b5de5 70%, #7a3fc0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .app-tagline-line {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .headline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .headline span {
+    color: #d880ff;
+  }
+
+  .description {
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.7;
+    max-width: 380px;
+    margin-bottom: 32px;
+  }
+
+  /* Feature pills */
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid rgba(160,90,240,0.3);
+    background: rgba(120,60,200,0.12);
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(210,160,255,0.9);
+    letter-spacing: 0.02em;
+  }
+  .feature-pill .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c06bff;
+    flex-shrink: 0;
+  }
+
+  /* Decorative corner accent */
+  .corner-accent {
+    position: absolute;
+    bottom: 28px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    opacity: 0.18;
+  }
+  .corner-accent span {
+    display: block;
+    height: 1px;
+    background: #b880ff;
+  }
+
+  /* Floating star sparkle (top right) */
+  .sparkle-tr {
+    position: absolute;
+    top: 36px;
+    right: 48px;
+    opacity: 0.35;
+  }
+  .sparkle-tr svg { width: 24px; height: 24px; }
+
+  .sparkle-bl {
+    position: absolute;
+    bottom: 44px;
+    left: 230px;
+    opacity: 0.15;
+  }
+  .sparkle-bl svg { width: 16px; height: 16px; }
+
+  /* Animation keyframes */
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%,-50%) scale(1.04); }
+  }
+  .icon-ring-outer { animation: pulse-glow 4s ease-in-out infinite; }
+  .icon-ring-mid { animation: pulse-glow 4s ease-in-out infinite 1s; }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .app-name {
+    background-size: 200% auto;
+    animation: shimmer 5s linear infinite;
+  }
+</style>
+</head>
+<body>
+<div class="feature-graphic">
+  <div class="glow-left"></div>
+  <div class="glow-pink"></div>
+  <div class="glow-right"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Sparkle accents -->
+  <div class="sparkle-tr">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5L12 2Z" fill="#ff80d4" stroke="#ff80d4" stroke-width="0.5"/>
+    </svg>
+  </div>
+  <div class="sparkle-bl">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5L12 2Z" fill="#b880ff" stroke="#b880ff" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Icon section -->
+  <div class="icon-section">
+    <div class="icon-ring-outer"></div>
+    <div class="icon-ring-mid"></div>
+    <div class="app-icon">
+      <img src="assets/icons/ot_new.png" alt="OtakuTracker app icon" />
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider"></div>
+
+  <!-- Content section -->
+  <div class="content-section">
+    <div class="eyebrow">MyAnimeList — Reimagined</div>
+    <div class="app-name">OtakuTracker</div>
+    <div class="app-tagline-line">Your anime universe, elevated</div>
+
+    <div class="headline">Track. Discover. <span>Obsess.</span></div>
+
+    <div class="description">
+      A beautifully redesigned MAL experience — manage your watchlist, explore new series, and dive deep into your anime stats with a UI that actually feels modern.
+    </div>
+
+    <div class="features">
+      <div class="feature-pill"><span class="dot"></span>Smart Watchlist</div>
+      <div class="feature-pill"><span class="dot"></span>MAL Sync</div>
+      <div class="feature-pill"><span class="dot"></span>Discovery Engine</div>
+      <div class="feature-pill"><span class="dot"></span>Season Tracker</div>
+      <div class="feature-pill"><span class="dot"></span>Stats & Insights</div>
+    </div>
+  </div>
+
+  <!-- Corner accent lines -->
+  <div class="corner-accent">
+    <span style="width: 48px;"></span>
+    <span style="width: 32px;"></span>
+    <span style="width: 18px;"></span>
+  </div>
+</div>
+</body>
+</html>
