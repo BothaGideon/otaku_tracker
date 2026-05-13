@@ -377,7 +377,7 @@ class AnimeDetailsMetadataPanel extends StatelessWidget {
           vertical: 14.0,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: rows
               .map(
                 (row) => AnimeDetailsLabelValueText(
@@ -1326,6 +1326,7 @@ class AnimeDetailsLabelValueText extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: RichText(
+        textAlign: TextAlign.start,
         text: TextSpan(
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: valueColor,
