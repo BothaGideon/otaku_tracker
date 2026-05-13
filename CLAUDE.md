@@ -52,6 +52,12 @@ This file is for coding agents and LLM assistants working in this repository.
    - do not add new dependencies unless necessary
    - prefer small, direct widget extraction over new abstraction layers
 
+9. Widget files must stay focused — one logical group of related widgets per file:
+   - a widget file that has grown to contain multiple unrelated widget groups must be split into separate files before adding more code to it
+   - each file should be named after the primary widget or feature it contains (e.g. `anime_details_hero_section.dart`, not `anime_details_widgets.dart`)
+   - when splitting an existing file, keep imports minimal — each file only imports what its own classes actually need
+   - private helper widgets (prefixed with `_`) stay in the same file as the public widget that uses them
+
 7. For UI/UX decisions, use and reference Material 3 guidance:
    - prefer Material 3 components, patterns, and terminology where they fit the product
    - use Material 3 color roles, spacing, states, and feedback patterns instead of ad hoc styling choices
