@@ -239,3 +239,20 @@ Do not track purely cosmetic interactions (scroll position, tab hover) — track
 - `AnimeDetailsScorePanel` and `AnimeDetailsMetadataPanel` must be wrapped in `SizedBox(width: double.infinity)` inside `AnimeDetailsHeroContent` so they fill the card width and have equal padding from the card background on both sides.
 - `AnimeDetailsMetadataPanel`'s inner Column uses `crossAxisAlignment: CrossAxisAlignment.stretch` and `AnimeDetailsLabelValueText` uses `textAlign: TextAlign.start` on its `RichText` to ensure label rows are consistently left-aligned.
 - The hero badge `Wrap` in `AnimeDetailsHeroContent` uses the default `WrapAlignment.start` so chips flow left-to-right, consistent with the Your List section.
+
+#### File structure for `lib/widgets/anime_details/`
+
+All anime details widgets live in `lib/widgets/anime_details/` split into focused files — do not add new classes to `anime_details_content.dart` and do not collapse these files back into one. The intended breakdown is:
+
+| File | Contains |
+|---|---|
+| `anime_details_content.dart` | `AnimeDetailsContent` (root entry point), `AnimeDetailsTextSection` |
+| `anime_details_hero_section.dart` | `AnimeDetailsHeroSection`, `AnimeDetailsHeroContent`, `AnimeDetailsHeroPoster`, `AnimeDetailsInfoBadge` |
+| `anime_details_score_panel.dart` | `AnimeDetailsScorePanel`, `AnimeDetailsHeroStat` |
+| `anime_details_metadata_panel.dart` | `AnimeDetailsMetadataPanel`, `AnimeDetailsLabelValueText` |
+| `anime_details_list_management.dart` | `AnimeListManagementSection`, `AnimeListStatusEditorSheet`, `_AnimeListInfoChip` |
+| `anime_details_relations_section.dart` | `AnimeDetailsRelationsSection`, `AnimeDetailsRelationGroup` |
+| `anime_details_recommendations_section.dart` | `AnimeDetailsRecommendationsSection`, `AnimeDetailsRecommendationCard` |
+| `anime_details_section_card.dart` | `AnimeDetailsSectionCard` |
+
+When adding a new widget to the anime details page, place it in the file whose existing classes are most closely related. If it does not fit any existing file, create a new focused file in `lib/widgets/anime_details/` rather than appending to `anime_details_content.dart`.
