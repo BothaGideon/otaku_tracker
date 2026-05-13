@@ -1,10 +1,7 @@
 <div align="center">
   <a href="otakutracker_feature_graphic.html">
-    <img src="assets/icons/ot_new.png" width="120" alt="OtakuTracker app icon" />
+    <img src="assets/feature_graphic.png" alt="OtakuTracker" />
   </a>
-  <h1>OtakuTracker</h1>
-  <p><em>Your anime universe, elevated</em></p>
-  <p><strong>Version 0.5.0</strong></p>
 </div>
 
 ---
