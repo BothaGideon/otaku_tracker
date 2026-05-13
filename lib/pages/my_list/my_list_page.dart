@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/providers/anime/anime_list_provider.dart';
 import 'package:otaku_tracker/providers/auth/oauth_provider.dart';
@@ -223,7 +222,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Icon(Symbols.login),
+                                  : const Icon(Icons.login),
                               label: Text(
                                 isLoading
                                     ? 'Connecting to MyAnimeList...'

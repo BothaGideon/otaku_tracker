@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/constants/anime/anime_navigation.dart';
 import 'package:otaku_tracker/models/api/anime/anime.dart';
 import 'package:otaku_tracker/providers/anime/anime_list_provider.dart';
@@ -206,13 +205,13 @@ class AnimeDetailsHeroContent extends StatelessWidget {
   IconData _iconForHeroBadge(AnimeDetailsHeroBadgeKind kind) {
     switch (kind) {
       case AnimeDetailsHeroBadgeKind.type:
-        return Symbols.movie_rounded;
+        return Icons.movie_rounded;
       case AnimeDetailsHeroBadgeKind.status:
-        return Symbols.schedule_rounded;
+        return Icons.schedule_rounded;
       case AnimeDetailsHeroBadgeKind.episodes:
-        return Symbols.live_tv_rounded;
+        return Icons.live_tv_rounded;
       case AnimeDetailsHeroBadgeKind.season:
-        return Symbols.calendar_month_rounded;
+        return Icons.calendar_month_rounded;
     }
   }
 }
@@ -286,13 +285,13 @@ class AnimeDetailsScorePanel extends StatelessWidget {
   IconData _iconForHeroStat(AnimeDetailsHeroStatKind kind) {
     switch (kind) {
       case AnimeDetailsHeroStatKind.userScore:
-        return Symbols.star_rounded;
+        return Icons.star_rounded;
       case AnimeDetailsHeroStatKind.rank:
-        return Symbols.leaderboard_rounded;
+        return Icons.leaderboard_rounded;
       case AnimeDetailsHeroStatKind.popularity:
-        return Symbols.thumb_up_rounded;
+        return Icons.thumb_up_rounded;
       case AnimeDetailsHeroStatKind.members:
-        return Symbols.groups_rounded;
+        return Icons.groups_rounded;
     }
   }
 }
@@ -598,20 +597,20 @@ class _AnimeListManagementSectionState
                           runSpacing: 8,
                           children: [
                             _AnimeListInfoChip(
-                              icon: Symbols.bookmark_rounded,
+                              icon: Icons.bookmark_rounded,
                               label: presentation.statusLabel,
                             ),
                             _AnimeListInfoChip(
-                              icon: Symbols.play_circle_rounded,
+                              icon: Icons.play_circle_rounded,
                               label: presentation.episodesLabel,
                             ),
                             _AnimeListInfoChip(
-                              icon: Symbols.star_rounded,
+                              icon: Icons.star_rounded,
                               label: presentation.scoreLabel,
                             ),
                             if (presentation.tags != null)
                               _AnimeListInfoChip(
-                                icon: Symbols.sell_rounded,
+                                icon: Icons.sell_rounded,
                                 label: presentation.tags!,
                               ),
                           ],
@@ -634,8 +633,8 @@ class _AnimeListManagementSectionState
                                   : () => _openEditor(status),
                               icon: Icon(
                                 status == null
-                                    ? Symbols.add_rounded
-                                    : Symbols.edit_rounded,
+                                    ? Icons.add_rounded
+                                    : Icons.edit_rounded,
                               ),
                               label: Text(
                                 presentation.hasEntry
@@ -646,7 +645,7 @@ class _AnimeListManagementSectionState
                             if (presentation.hasEntry)
                               OutlinedButton.icon(
                                 onPressed: isSubmitting ? null : _removeEntry,
-                                icon: const Icon(Symbols.delete_rounded),
+                                icon: const Icon(Icons.delete_rounded),
                                 label: const Text('Remove'),
                               ),
                           ],
@@ -662,7 +661,7 @@ class _AnimeListManagementSectionState
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: () => ref.invalidate(userAnimeListProvider),
-                        icon: const Icon(Symbols.refresh_rounded),
+                        icon: const Icon(Icons.refresh_rounded),
                         label: const Text('Retry'),
                       ),
                     ],

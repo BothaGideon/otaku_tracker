@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jikan_api/jikan_api.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:otaku_tracker/widgets/shared/loading/network_image_skeleton.dart';
 
 class PosterImageTitle extends StatelessWidget {
@@ -30,7 +29,7 @@ class PosterImageTitle extends StatelessWidget {
     this.showBottomTitle = true,
     this.showAuxiliaryStatWhenNoStatus = true,
     this.auxiliaryStatValue,
-    this.auxiliaryStatIcon = Symbols.thumb_up_rounded,
+    this.auxiliaryStatIcon = Icons.thumb_up_rounded,
   });
 
   Color _getStatusColor(String status) {
@@ -109,7 +108,7 @@ class PosterImageTitle extends StatelessWidget {
                                   const Padding(
                                     padding: EdgeInsets.only(right: 2.0),
                                     child: Icon(
-                                        size: 16.0, Symbols.star_rounded),
+                                        size: 16.0, Icons.star_rounded),
                                   ),
                                   Text(
                                     scoreToUse != null && scoreToUse > 0

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? pictureUrl;
@@ -22,7 +21,7 @@ class UserAvatar extends StatelessWidget {
       radius: radius,
       foregroundImage: hasPicture ? NetworkImage(trimmedPictureUrl) : null,
       onForegroundImageError: hasPicture ? (_, __) {} : null,
-      child: Icon(Symbols.account_circle, size: iconSize),
+      child: Icon(Icons.account_circle, size: iconSize),
     );
   }
 }
