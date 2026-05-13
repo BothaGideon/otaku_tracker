@@ -116,6 +116,7 @@ class MyListQuickEditButton extends ConsumerWidget {
               context: context,
               isScrollControlled: true,
               useSafeArea: true,
+              showDragHandle: true,
               builder: (sheetContext) => MyListQuickEditSheet(
                 userAnimeData: userAnimeData,
                 onOpenAdvancedEdit: () {

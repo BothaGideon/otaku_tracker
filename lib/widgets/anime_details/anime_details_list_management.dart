@@ -30,6 +30,7 @@ class _AnimeListManagementSectionState
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      showDragHandle: true,
       builder: (context) => AnimeListStatusEditorSheet(
         animeId: widget.animeId,
         totalEpisodes: widget.totalEpisodes,
