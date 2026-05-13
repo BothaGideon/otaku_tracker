@@ -199,6 +199,7 @@ class _SeasonalPageState extends ConsumerState<SeasonalPage> {
                           imageUrl: imageUrl,
                           title: anime.title,
                           userScore: anime.mean,
+                          auxiliaryStatValue: anime.numListUsers,
                           showAuxiliaryStatWhenNoStatus: false,
                         ),
                       );
