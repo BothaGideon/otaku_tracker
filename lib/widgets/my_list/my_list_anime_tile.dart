@@ -370,13 +370,14 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('1 episode'),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: isSaving
-                        ? null
-                        : () => setState(_markCompleted),
-                    icon: const Icon(Icons.check_circle_outline_rounded),
-                    label: const Text('Mark completed'),
-                  ),
+                  if (selectedStatus != 'completed')
+                    OutlinedButton.icon(
+                      onPressed: isSaving
+                          ? null
+                          : () => setState(_markCompleted),
+                      icon: const Icon(Icons.check_circle_outline_rounded),
+                      label: const Text('Mark completed'),
+                    ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -443,7 +444,7 @@ class _MyListQuickEditSheetState extends ConsumerState<MyListQuickEditSheet> {
                   (score) => DropdownMenuItem(
                     value: score,
                     child: Text(
-                      score == 0 ? 'Not rated (0)' : '$score / 10',
+                      score == 0 ? 'Not rated' : '$score / 10',
                     ),
                   ),
                 ),
