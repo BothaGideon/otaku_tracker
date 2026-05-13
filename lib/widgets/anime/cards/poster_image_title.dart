@@ -33,6 +33,23 @@ class PosterImageTitle extends StatelessWidget {
     this.auxiliaryStatIcon = Icons.thumb_up_rounded,
   });
 
+  static String _formatStatus(String status) {
+    switch (status) {
+      case 'watching':
+        return 'Watching';
+      case 'completed':
+        return 'Completed';
+      case 'on_hold':
+        return 'On Hold';
+      case 'dropped':
+        return 'Dropped';
+      case 'plan_to_watch':
+        return 'Planned';
+      default:
+        return status;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
@@ -101,32 +118,50 @@ class PosterImageTitle extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8.0),
-                        showAuxiliaryStat ? Flexible(
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerRight,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 3.0),
-                                    child: Icon(
-                                      size: 16.0,
-                                      auxiliaryStatIcon,
-                                    ),
-                                  ),
-                                  Text(
-                                    formatNumberCompact(auxiliaryStatToUse),
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14.0),
-                                  ),
-                                ],
+                        if (userStatus != null)
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  _formatStatus(userStatus!),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 14.0),
+                                ),
                               ),
                             ),
-                          ),
-                        ) : const SizedBox.shrink(),
+                          )
+                        else if (showAuxiliaryStat)
+                          Flexible(
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 3.0),
+                                      child: Icon(
+                                        size: 16.0,
+                                        auxiliaryStatIcon,
+                                      ),
+                                    ),
+                                    Text(
+                                      formatNumberCompact(auxiliaryStatToUse),
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 14.0),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
                       ],
                     ),
                   ),
