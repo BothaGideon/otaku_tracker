@@ -154,7 +154,6 @@ class AnimeDetailsHeroContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const SizedBox(height: 8),
         Text(
           details.title,
           textAlign: TextAlign.center,
@@ -184,19 +183,25 @@ class AnimeDetailsHeroContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        AnimeDetailsScorePanel(stats: details.heroStats),
+        SizedBox(
+          width: double.infinity,
+          child: AnimeDetailsScorePanel(stats: details.heroStats),
+        ),
         const SizedBox(height: 16),
         Wrap(
-          alignment: WrapAlignment.start,
+          alignment: WrapAlignment.center,
           spacing: 8,
           runSpacing: 8,
           children: metadata,
         ),
         const SizedBox(height: 16),
-        AnimeDetailsMetadataPanel(
-          rows: details.metadataRows,
-          labelColor: subtitleColor,
-          valueColor: titleColor,
+        SizedBox(
+          width: double.infinity,
+          child: AnimeDetailsMetadataPanel(
+            rows: details.metadataRows,
+            labelColor: subtitleColor,
+            valueColor: titleColor,
+          ),
         ),
       ],
     );
