@@ -143,6 +143,7 @@ This file is for coding agents and LLM assistants working in this repository.
 - When planning, also consider how the changes will affect the overall architecture of the app, and ensure that they fit well within the existing structure and do not introduce unnecessary coupling or complexity, while still achieving the desired functionality and user experience.
 - For any changes that involve state management, plan how the state will be managed and updated, ensuring that it follows the existing patterns in the codebase and does not introduce unnecessary complexity or bugs, while still providing a clear and maintainable way to manage the state of the app.
 - Create a markdown checklist inside the repo for the implementation steps, and check off each step as it is completed, to ensure that the implementation is thorough and follows the planned approach, while also providing a clear record of the work that was done and any decisions that were made along the way.
+- All planning and checklist markdown files must be saved to `.agents_planning/` — never create them in the repo root or any other directory.
 - For any changes that involve user input or interaction, plan how the app will validate and handle that input, ensuring that it provides clear feedback to the user and handles any errors or edge cases gracefully, while still providing a good user experience.
 
 ## Firebase Tracking
