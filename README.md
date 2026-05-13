@@ -1,119 +1,120 @@
 # Otaku Tracker
 
-A modern Flutter application that provides a revamped user interface for MyAnimeList (MAL), allowing users to track their anime watching progress, browse seasonal anime, and manage their personal anime lists.
+A Flutter application that provides a revamped UI for MyAnimeList (MAL), letting users browse seasonal anime, manage their watchlist, and track their viewing progress.
+
+**Version:** 0.5.0
+
+---
 
 ## Features
 
-- **Anime Tracking**: View and manage your personal anime list with status updates (watching, completed, on-hold, etc.)
-- **Seasonal Browse**: Discover anime from current and previous seasons with detailed information
-- **User Authentication**: Secure OAuth2 login with MyAnimeList accounts
-- **Responsive Design**: Material Design 3 UI with dark theme support
-- **Deep Linking**: Support for external links to anime details
-- **Horizontal Carousels**: Intuitive browsing of anime collections
+### Home
+- Reorderable carousels for current season, previous season, leftover anime, top upcoming, top airing, and most popular
+- Tap any card to open the full anime details page
+
+### Seasonal Browser
+- Browse anime by past, current, or upcoming season
+- Infinite-scroll paginated grid
+- Pull-to-refresh
+
+### My List
+- Full watchlist synced from MyAnimeList
+- Filter by status: Watching, Completed, On-Hold, Dropped, Plan to Watch
+- Sort by: Last Updated, Title, Score, Progress
+- Toggle between poster grid view and detail list view
+- Pull-to-refresh
+
+### Anime Details
+- Hero section with poster, metadata chips (type, status, episodes, season), score panel, and statistics
+- Synopsis, background, and genre tags
+- Related anime and recommendations
+- Add/update list entry (status, score, episode progress) directly from the details page
+- NSFW content gating
+
+### Profile
+- MAL avatar and username
+- Anime statistics: episodes watched, days watched, mean score
+- Watchlist breakdown by status category
+- NSFW content toggle
+- Logout
+
+### General
+- MyAnimeList OAuth2 login
+- Deep link support for navigating to anime details from external sources
+- Skeleton loading states throughout
+- Material Design 3 with dark theme
+- Firebase Analytics, Crashlytics, and Performance monitoring
+
+---
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.4.3 or higher)
-- [Dart SDK](https://dart.dev/get-dart) (included with Flutter)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (Dart ≥ 3.4.3)
 - A MyAnimeList account
+- A MyAnimeList API client ID ([create one here](https://myanimelist.net/apiconfig))
 
-## Setup Instructions
+---
 
-1. **Clone the repository:**
+## Setup
+
+1. **Clone and install dependencies:**
    ```bash
    git clone https://github.com/your-username/otaku-tracker.git
    cd otaku-tracker
-   ```
-
-2. **Install dependencies:**
-   ```bash
    flutter pub get
    ```
 
-3. **Get MyAnimeList API Credentials:**
-
-   - Visit [MyAnimeList API](https://myanimelist.net/apiconfig)
-   - Create a new application
-   - Note down your Client ID
-
-4. **Configure API Key:**
-
-   The app requires a MyAnimeList API key to be set as an environment variable during build time. Use the `--dart-define` flag when running or building the app:
-
+2. **Run with your MAL client ID:**
    ```bash
    flutter run --dart-define=MALAPI=your_mal_client_id_here
    ```
 
-   Or for building:
-
+3. **Build for release:**
    ```bash
    flutter build apk --dart-define=MALAPI=your_mal_client_id_here
    flutter build ios --dart-define=MALAPI=your_mal_client_id_here
    ```
 
-   **Security Note:** Never commit your API key to version control. Consider using a `.env` file with a tool like `flutter_dotenv` for local development if preferred, but the app currently uses `String.fromEnvironment()` for build-time configuration.
+> The app reads the client ID via `String.fromEnvironment('MALAPI')` at build time. Never commit your key to version control.
 
-5. **Run the app:**
-
-   For Android:
-   ```bash
-   flutter run --dart-define=MALAPI=your_mal_client_id_here
-   ```
-
-   For iOS:
-   ```bash
-   flutter run --dart-define=MALAPI=your_mal_client_id_here
-   ```
-
-   For web (limited functionality):
-   ```bash
-   flutter run -d chrome --dart-define=MALAPI=your_mal_client_id_here
-   ```
+---
 
 ## Project Structure
 
 ```
 lib/
-├── constants/          # App constants and routes
-├── models/            # Data models (Anime DTOs)
-├── pages/             # Main app pages (Landing, My List, Seasonal)
-├── providers/         # Riverpod state providers
-├── services/          # API services (OAuth, Anime List, Seasonal)
-└── widgets/           # Reusable UI components
+├── constants/          # App-wide constants, helpers, and navigation utilities
+├── models/             # Data models and DTOs
+├── pages/              # Top-level screens (home, seasonal, my list, anime details, profile)
+├── providers/          # Riverpod state providers
+├── services/           # Business logic, API access, caching, and telemetry
+└── widgets/            # Reusable UI components
+    ├── anime/          # Poster cards and carousels
+    ├── anime_details/  # All components for the anime details page
+    ├── my_list/        # Watchlist tiles, detail view, controls sheet
+    └── shared/         # App bar, bottom nav, skeletons, error states, user avatar
 ```
+
+---
 
 ## Key Dependencies
 
-- **flutter_riverpod**: State management
-- **jikan_api**: MyAnimeList API wrapper
-- **oauth2**: OAuth2 authentication
-- **http**: HTTP requests
-- **flutter_web_auth_2**: Web-based authentication
-- **carousel_slider**: Horizontal scrolling carousels
-- **flutter_animate**: Animations
+| Package | Purpose |
+|---|---|
+| `flutter_riverpod` | State management |
+| `go_router` | Declarative navigation and deep linking |
+| `jikan_api` | MyAnimeList API v2 wrapper |
+| `oauth2` + `flutter_web_auth_2` | MAL OAuth2 authentication |
+| `shared_preferences` | Token and preference persistence |
+| `firebase_analytics` / `firebase_crashlytics` | Telemetry and error reporting |
+| `firebase_performance` | Network and trace performance monitoring |
+| `flutter_animate` | Animations |
+| `carousel_slider` | Horizontal carousels on the home screen |
+| `app_links` | Deep link handling |
+| `fluttertoast` | In-app toast notifications |
 
-## API Usage
-
-The app integrates with the official MyAnimeList API v2:
-
-- **Authentication**: OAuth2 flow for user login
-- **Anime Data**: Fetching seasonal anime lists and user lists
-- **Rate Limits**: Respects MAL API rate limits (typically 60 requests/minute)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+---
 
 ## License
 
 This project is private and not intended for public distribution.
-
-## Support
-
-For issues or questions, please create an issue in the repository.
