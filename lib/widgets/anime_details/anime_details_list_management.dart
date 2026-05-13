@@ -476,7 +476,7 @@ class _AnimeListStatusEditorSheetState
                   (score) => DropdownMenuItem(
                     value: score,
                     child: Text(
-                      score == 0 ? 'Not rated (0)' : '$score / 10',
+                      score == 0 ? 'Not rated' : '$score / 10',
                     ),
                   ),
                 ),
@@ -511,9 +511,9 @@ class _AnimeListStatusEditorSheetState
                   border: OutlineInputBorder(),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 0, child: Text('Priority 0')),
-                  DropdownMenuItem(value: 1, child: Text('Priority 1')),
-                  DropdownMenuItem(value: 2, child: Text('Priority 2')),
+                  DropdownMenuItem(value: 0, child: Text('Low')),
+                  DropdownMenuItem(value: 1, child: Text('Medium')),
+                  DropdownMenuItem(value: 2, child: Text('High')),
                 ],
                 onChanged: isSaving
                     ? null
@@ -556,7 +556,9 @@ class _AnimeListStatusEditorSheetState
                   6,
                   (value) => DropdownMenuItem(
                     value: value,
-                    child: Text('Value $value'),
+                    child: Text(
+                        value == 0 ? 'Not rated' : '$value / 5'
+                    ),
                   ),
                 ),
                 onChanged: isSaving
