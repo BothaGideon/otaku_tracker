@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jikan_api/jikan_api.dart';
+import 'package:otaku_tracker/constants/app/number_format.dart';
 import 'package:otaku_tracker/widgets/shared/loading/network_image_skeleton.dart';
 
 class PosterImageTitle extends StatelessWidget {
@@ -100,6 +101,7 @@ class PosterImageTitle extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8.0),
+
                         Flexible(
                           child: Align(
                             alignment: Alignment.bottomRight,
@@ -117,7 +119,7 @@ class PosterImageTitle extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    auxiliaryStatToUse?.toString() ?? 'N/A',
+                                    formatNumberCompact(auxiliaryStatToUse),
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 14.0),
                                   ),
@@ -126,6 +128,7 @@ class PosterImageTitle extends StatelessWidget {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),

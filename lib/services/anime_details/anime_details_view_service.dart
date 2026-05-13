@@ -1,4 +1,5 @@
 import 'package:jikan_api/jikan_api.dart';
+import 'package:otaku_tracker/constants/app/number_format.dart';
 import 'package:otaku_tracker/models/api/anime/anime.dart';
 
 enum AnimeDetailsHeroBadgeKind {
@@ -260,7 +261,7 @@ class AnimeDetailsViewService {
       AnimeDetailsHeroStatData(
         kind: AnimeDetailsHeroStatKind.members,
         label: 'Members',
-        value: anime.members?.toString() ?? 'N/A',
+        value: formatNumberWithSeparator(anime.members),
       ),
     ];
   }
