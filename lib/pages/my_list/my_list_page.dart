@@ -156,7 +156,7 @@ class _MyListPageState extends ConsumerState<MyListPage> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Connect your MAL account to sync your list and unlock your profile stats inside Otaku Tracker.',
+                              'Connect your MAL account to sync your list and unlock your profile stats inside OtakuTracker.',
                               style: Theme.of(context).textTheme.bodyLarge,
                               textAlign: TextAlign.center,
                             ),
