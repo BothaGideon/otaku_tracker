@@ -23,6 +23,7 @@ class MyListControlsBar extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
+      isScrollControlled: true,
       showDragHandle: true,
       builder: (context) => MyListControlsSheet(
         initialStatus: selectedStatus,
@@ -128,22 +129,18 @@ class _MyListControlsSheetState extends State<MyListControlsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            8,
-            16,
-            MediaQuery.viewInsetsOf(context).bottom + 16,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        MediaQuery.viewInsetsOf(context).bottom + 16,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                 Text(
                   'List controls',
                   style: Theme.of(context).textTheme.headlineSmall,
@@ -241,8 +238,6 @@ class _MyListControlsSheetState extends State<MyListControlsSheet> {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 }
