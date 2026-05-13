@@ -228,3 +228,14 @@ Do not track purely cosmetic interactions (scroll position, tab hover) — track
 - The anime details hero poster should be a plain rounded poster image only. It should not reuse `PosterImageTitle`, and it should not show overlay stats, favorites, score, or the small title underneath.
 - Navigation uses `GoRouter` with routes defined in `lib/providers/navigation/gorouter_provider.dart`; for anime details, always use `openAnimeDetailsPage(context, animeId)` from `lib/constants/anime/anime_navigation.dart`
 - Deep linking is handled by `lib/services/navigation/deeplink_service.dart`; OAuth callbacks are routed through this service
+
+### Icons
+
+- Never use the `material_symbols_icons` package (`Symbols.*`). It does not render reliably in Play Store release builds. Always use Flutter's built-in `Icons.*` from `flutter/material.dart` instead.
+
+### Anime Details page
+
+- `AnimeDetailsInfoBadge` (the hero metadata chips showing type/status/episodes/season) must match the `_AnimeListInfoChip` style: `surfaceContainerHighest` background, `horizontal: 12` / `vertical: 8` padding, theme-default icon and text colors, `ConstrainedBox(maxWidth: 220)` with `TextOverflow.ellipsis` on the label. Do not use custom white overlay colours or forced white text for these chips.
+- `AnimeDetailsScorePanel` and `AnimeDetailsMetadataPanel` must be wrapped in `SizedBox(width: double.infinity)` inside `AnimeDetailsHeroContent` so they fill the card width and have equal padding from the card background on both sides.
+- `AnimeDetailsMetadataPanel`'s inner Column uses `crossAxisAlignment: CrossAxisAlignment.stretch` and `AnimeDetailsLabelValueText` uses `textAlign: TextAlign.start` on its `RichText` to ensure label rows are consistently left-aligned.
+- The hero badge `Wrap` in `AnimeDetailsHeroContent` uses the default `WrapAlignment.start` so chips flow left-to-right, consistent with the Your List section.
