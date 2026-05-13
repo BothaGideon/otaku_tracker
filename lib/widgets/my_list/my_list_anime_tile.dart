@@ -51,6 +51,7 @@ class MyListAnimeTile extends StatelessWidget {
                       userStatus: userAnimeData.listStatus.status,
                       userScore: displayedScore,
                       showBottomTitle: false,
+                      showAuxiliaryStat: false,
                     ),
                   ),
                 ),

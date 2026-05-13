@@ -16,7 +16,7 @@ class PosterImageTitle extends StatelessWidget {
   final String? imageUrl;
   final String? title;
   final bool showBottomTitle;
-  final bool showAuxiliaryStatWhenNoStatus;
+  final bool showAuxiliaryStat;
   final num? auxiliaryStatValue;
   final IconData auxiliaryStatIcon;
 
@@ -28,7 +28,7 @@ class PosterImageTitle extends StatelessWidget {
     this.imageUrl,
     this.title,
     this.showBottomTitle = true,
-    this.showAuxiliaryStatWhenNoStatus = true,
+    this.showAuxiliaryStat = false,
     this.auxiliaryStatValue,
     this.auxiliaryStatIcon = Icons.thumb_up_rounded,
   });
@@ -38,7 +38,7 @@ class PosterImageTitle extends StatelessWidget {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
     final titleToUse = title ?? anime?.titleEnglish ?? anime?.title ?? '';
     final scoreToUse = userScore ?? anime?.score;
-    final auxiliaryStatToUse = auxiliaryStatValue ?? anime?.favorites;
+    final auxiliaryStatToUse = auxiliaryStatValue ?? anime?.members;
 
     final hasImage = imageUrlToUse.isNotEmpty;
 
@@ -101,8 +101,7 @@ class PosterImageTitle extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8.0),
-
-                        Flexible(
+                        showAuxiliaryStat ? Flexible(
                           child: Align(
                             alignment: Alignment.bottomRight,
                             child: FittedBox(
@@ -127,8 +126,7 @@ class PosterImageTitle extends StatelessWidget {
                               ),
                             ),
                           ),
-                        ),
-
+                        ) : const SizedBox.shrink(),
                       ],
                     ),
                   ),
