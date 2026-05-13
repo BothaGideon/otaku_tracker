@@ -32,31 +32,6 @@ class PosterImageTitle extends StatelessWidget {
     this.auxiliaryStatIcon = Icons.thumb_up_rounded,
   });
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'watching':
-        return Colors.blue;
-      case 'completed':
-        return Colors.green;
-      case 'on_hold':
-        return Colors.orange;
-      case 'dropped':
-        return Colors.red;
-      case 'plan_to_watch':
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _formatStatusText(String status) {
-    return status
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((word) => word[0].toUpperCase() + word.substring(1))
-        .join(' ');
-  }
-
   @override
   Widget build(BuildContext context) {
     final imageUrlToUse = imageUrl ?? anime?.imageUrl ?? '';
@@ -118,7 +93,6 @@ class PosterImageTitle extends StatelessWidget {
                                         : 'N/A',
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 14.0),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
@@ -132,50 +106,23 @@ class PosterImageTitle extends StatelessWidget {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerRight,
-                              child:
-                                  userStatus != null && userStatus!.isNotEmpty
-                                      ? Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0, vertical: 4.0),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(userStatus!),
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                          ),
-                                          child: Text(
-                                            _formatStatusText(userStatus!),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10.0,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        )
-                                      : showAuxiliaryStatWhenNoStatus
-                                          ? Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 3.0),
-                                                  child: Icon(
-                                                    size: 16.0,
-                                                    auxiliaryStatIcon,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  auxiliaryStatToUse
-                                                          ?.toString() ??
-                                                      'N/A',
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 14.0),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ],
-                                            )
-                                          : const SizedBox.shrink(),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 3.0),
+                                    child: Icon(
+                                      size: 16.0,
+                                      auxiliaryStatIcon,
+                                    ),
+                                  ),
+                                  Text(
+                                    auxiliaryStatToUse?.toString() ?? 'N/A',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14.0),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
